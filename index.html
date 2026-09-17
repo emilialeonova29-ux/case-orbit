@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Орбита падежей — мини-игра v2.5</title>
+<title>Орбита падежей — мини-игра v2.5.2</title>
 <style>
 :root{
   --bg:#070b18; --panel:#11182a; --panel2:#18223a; --text:#f4f7ff; --muted:#9fb0cf;
@@ -69,8 +69,10 @@ button:disabled:hover{transform:none!important;background:inherit;border-color:r
   .sortzone.has-selection .sortcard.done{display:none}
   .sortzone.has-selection .docks{position:sticky;bottom:8px;z-index:3;padding:10px;border-radius:18px;background:rgba(7,11,24,.94);border:1px solid rgba(255,255,255,.1);box-shadow:0 -16px 34px rgba(0,0,0,.34)}
   .dock{min-height:62px}
+  .correction .casewheel{grid-template-columns:1fr 1fr}
   .bosscases{grid-template-columns:1fr 1fr}
 }
+.answer-zone{scroll-margin-bottom:16px}
 
 
 /* v2.5 teacher report post-release patch */
@@ -131,7 +133,7 @@ button:disabled:hover{transform:none!important;background:inherit;border-color:r
     <div class="stagehead"><div class="stageicon">◈</div><div><div class="eyebrow">Этап 1 · Маршрут</div><h2>Калибровка порталов</h2><p>Определи падеж выделенного существительного и направь сигнал в нужный сектор.</p></div></div>
     <div class="gamegrid"><div class="missioncard" id="mission1">
       <div class="micro" id="s1Count">Сигнал 1/6</div><div class="sentence" id="s1Sentence"></div><div class="prompt">Какой падеж у выделенного слова?</div>
-      <div class="casewheel" id="s1Cases"></div><div class="feedback" id="s1Feedback"></div><div class="nextrow"><button class="cta nextbtn" id="s1Next">Следующий сигнал →</button></div>
+      <div class="casewheel answer-zone" id="s1Cases"></div><div class="feedback" id="s1Feedback"></div><div class="nextrow"><button class="cta nextbtn" id="s1Next">Следующий сигнал →</button></div>
     </div><aside class="sidecard"><h3>Навигационный канал</h3><div class="intel" id="s1Intel">Смотри не только на окончание. Найди слово, от которого зависит существительное, и задай вопрос.</div><h3>Открытые модули</h3><div class="rewards"><div class="shard" id="r1">◈</div><div class="shard" id="r2">⌬</div><div class="shard" id="r3">✦</div></div></aside></div>
   </section>
 
@@ -140,7 +142,7 @@ button:disabled:hover{transform:none!important;background:inherit;border-color:r
     <div class="gamegrid"><div class="missioncard" id="mission2">
       <div class="micro" id="s2Count">Проверка 1/5</div><div class="sentence" id="s2Sentence"></div><div class="claim" id="s2Claim"></div>
       <div class="binaryrow" id="binaryRow"><button class="binary" data-verdict="true">✓ Разметка верна</button><button class="binary" data-verdict="false">⚠ Здесь ошибка</button></div>
-      <div class="correction" id="correction"><div class="prompt">Исправь разметку: какой падеж верный?</div><div class="casewheel" id="s2Cases"></div></div>
+      <div class="correction" id="correction"><div class="prompt">Исправь разметку: какой падеж верный?</div><div class="casewheel answer-zone" id="s2Cases"></div></div>
       <div class="feedback" id="s2Feedback"></div><div class="nextrow"><button class="cta nextbtn" id="s2Next">Продолжить →</button></div>
     </div><aside class="sidecard"><h3>Протокол</h3><div class="intel"><strong>Шаг 1.</strong> Проверь утверждение.<br><strong>Шаг 2.</strong> Если видишь сбой, укажи верный падеж.</div><div class="intel" id="s2Intel">Система иногда специально путает формы, похожие по окончанию.</div><h3>Открытые модули</h3><div class="rewards"><div class="shard on">◈</div><div class="shard" id="r2b">⌬</div><div class="shard" id="r3b">✦</div></div></aside></div>
   </section>
@@ -148,7 +150,7 @@ button:disabled:hover{transform:none!important;background:inherit;border-color:r
   <section class="screen" id="stage3">
     <div class="stagehead"><div class="stageicon">⇄</div><div><div class="eyebrow">Этап 3 · Сортировка</div><h2>Распредели сигналы</h2><p>Выбери карточку, затем отправь её в сектор нужного падежа. Здесь нужно держать в голове несколько контекстов сразу.</p></div></div>
     <div class="gamegrid"><div class="missioncard" id="mission3">
-      <div class="micro" id="s3Count">Пакет 1/2</div><div class="sortzone"><div class="sortcards" id="sortCards"></div><div class="docks" id="sortDocks"></div></div>
+      <div class="micro" id="s3Count">Пакет 1/2</div><div class="sortzone"><div class="sortcards" id="sortCards"></div><div class="docks answer-zone" id="sortDocks"></div></div>
       <div class="feedback show" id="s3Feedback">Выбери карточку слева, затем сектор справа.</div><div class="nextrow"><button class="cta nextbtn" id="s3Next">Следующий пакет →</button></div>
     </div><aside class="sidecard"><h3>Режим адаптации</h3><div class="intel" id="adaptiveIntel">Сложность подстраивается по серии: уверенная игра открывает более коварные совпадения форм.</div><h3>Открытые модули</h3><div class="rewards"><div class="shard on">◈</div><div class="shard on">⌬</div><div class="shard" id="r3c">✦</div></div></aside></div>
   </section>
@@ -156,7 +158,7 @@ button:disabled:hover{transform:none!important;background:inherit;border-color:r
   <section class="screen" id="boss">
     <div class="stagehead"><div class="stageicon">✦</div><div><div class="eyebrow">Финальный раунд · Blackout</div><h2>Навигация без подсказок</h2><p>Четыре сигнала подряд. Только контекст и шесть падежей — без подсказки вопросом.</p></div></div>
     <div class="gamegrid"><div class="missioncard boss" id="missionBoss"><div class="bossbar" id="bossBar"><i class="bossnode"></i><i class="bossnode"></i><i class="bossnode"></i><i class="bossnode"></i></div>
-      <div class="micro" id="bossCount">Сигнал 1/4</div><div class="sentence" id="bossSentence"></div><div class="bosscases" id="bossCases"></div><div class="feedback" id="bossFeedback"></div><div class="nextrow"><button class="cta nextbtn" id="bossNext">Следующий →</button></div>
+      <div class="micro" id="bossCount">Сигнал 1/4</div><div class="sentence" id="bossSentence"></div><div class="bosscases answer-zone" id="bossCases"></div><div class="feedback" id="bossFeedback"></div><div class="nextrow"><button class="cta nextbtn" id="bossNext">Следующий →</button></div>
     </div><aside class="sidecard"><h3>Blackout</h3><div class="intel">В финале система не показывает вопрос и не даёт обучающую подсказку до ответа.</div><div class="intel">За каждый точный сигнал — повышенный балл.</div><h3>Модули</h3><div class="rewards"><div class="shard on">◈</div><div class="shard on">⌬</div><div class="shard on">✦</div></div></aside></div>
   </section>
 
@@ -172,7 +174,7 @@ button:disabled:hover{transform:none!important;background:inherit;border-color:r
 <script>
 (() => {
 'use strict';
-// CASE//ORBIT v2.5 — teacher-report post-release patch. Core game systems unchanged.
+// CASE//ORBIT v2.5.2 — post-release mobile answer-zone visibility hotfix. Core game systems unchanged.
 const CASES = {
   nom:{short:'И.п.',name:'Именительный',q:'кто? что?'}, gen:{short:'Р.п.',name:'Родительный',q:'кого? чего?'},
   dat:{short:'Д.п.',name:'Дательный',q:'кому? чему?'}, acc:{short:'В.п.',name:'Винительный',q:'кого? что?'},
@@ -236,7 +238,7 @@ const BANK = [
 ];
 
 const GAME_TITLE='CASE//ORBIT — «Орбита падежей»';
-const GAME_VERSION='2.5';
+const GAME_VERSION='2.5.2';
 const PLAYER_SESSION_KEY='caseOrbitPlayerSession';
 const FAMILY_LABELS={
   'syntax-subject':'И.п. / В.п.: подлежащее и объект действия',
@@ -268,7 +270,7 @@ const state={
   player:{firstName:'',lastInitial:'',className:''},reportObject:null,reportText:'',
   stage:0,score:0,streak:0,maxStreak:0,energy:4,difficulty:1,phase:'awaitingInput',
   attempts:0,resolvedTasks:0,firstTryCorrect:0,eventualCorrect:0,wrongAttempts:0,completed:0,
-  taskStats:{},results:[],usedThisRun:new Set(),rewards:[],moduleQuality:{},
+  taskStats:{},results:[],usedThisRun:new Set(),rewards:[],moduleQuality:{},qaLog:[],qaContext:{stage:null,mode:null,taskId:null,correctCase:null},
   runSeed:0,explicitSeed:false,reservedBoss:{hard:[],support:[]},
   s1:[],s1i:0,s1CasePlan:[],currentS1:null,
   s2:[],s2i:0,s2CasePlan:[],s2TruthPattern:[],currentS2:null,s2AwaitingCorrection:false,
@@ -374,6 +376,109 @@ function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(rn
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function mark(t){const [a,b]=t.span||[];if(!Number.isInteger(a)||!Number.isInteger(b)||t.s.slice(a,b)!==t.w)return esc(t.s);return esc(t.s.slice(0,a))+'<span class="target">'+esc(t.s.slice(a,b))+'</span>'+esc(t.s.slice(b))}
 function setScreen(id){screens.forEach(s=>$(s).classList.toggle('active',s===id));window.scrollTo({top:0,behavior:'smooth'})}
+const ANSWER_SAFE_MARGIN=16;
+function visualViewportMetrics(){
+  const vv=window.visualViewport;
+  return {width:vv?.width||window.innerWidth,height:vv?.height||window.innerHeight,offsetTop:vv?.offsetTop||0};
+}
+function visibleAnswerItems(container){
+  if(!container)return [];
+  return [...container.querySelectorAll('button:not([hidden]), .sortcard.selected')].filter(el=>el.offsetParent!==null);
+}
+function answerOptionCases(container){
+  if(!container)return [];
+  return [...container.querySelectorAll('[data-case]')].filter(el=>el.offsetParent!==null).map(el=>el.dataset.case).filter(Boolean);
+}
+function currentTaskForStage(stage){
+  if(stage==='stage1')return state.currentS1;
+  if(stage==='stage2')return state.currentS2;
+  if(stage==='boss')return state.boss?.[state.bossi]||null;
+  if(stage==='stage3'){
+    const pack=state.s3packs?.[state.s3i];
+    return pack?.tasks?.find(t=>t.id===state.selectedSort)||null;
+  }
+  return null;
+}
+function setQAContext(stage,mode,task){
+  state.qaContext={stage,mode,taskId:task?.id||null,correctCase:task?.c||null};
+  return state.qaContext;
+}
+function captureAnswerZoneDebug(stage,container,correctCase,task,{reason='manual',mode=null}={}){
+  const metrics=visualViewportMetrics();
+  const correct=container?.querySelector?.(`[data-case="${correctCase}"]`)||null;
+  const rect=correct?.getBoundingClientRect?.();
+  const entry={
+    reason,gameVersion:GAME_VERSION,runSeed:state.runSeed,stage,mode:mode||((state.qaContext?.taskId===task?.id&&state.qaContext?.stage===stage)?state.qaContext.mode:null),taskId:task?.id||null,correctCase:correctCase||task?.c||null,
+    viewport:{width:window.innerWidth,height:window.innerHeight,visualWidth:metrics.width,visualHeight:metrics.height},
+    optionCases:answerOptionCases(container),
+    correctRect:rect?{top:Math.round(rect.top),bottom:Math.round(rect.bottom),left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width),height:Math.round(rect.height)}:null,
+    scrollY:Math.round(window.scrollY),at:new Date().toISOString()
+  };
+  state.qaLog.push(entry);if(state.qaLog.length>30)state.qaLog.splice(0,state.qaLog.length-30);return entry;
+}
+function qaAssertCorrectOption(stage,container,correctCase,task,{logFailure=true}={}){
+  const metrics=visualViewportMetrics();
+  const el=container?.querySelector?.(`[data-case="${correctCase}"]`)||null;
+  const rect=el?.getBoundingClientRect?.();
+  const safeBottom=metrics.offsetTop+metrics.height-ANSWER_SAFE_MARGIN;
+  const ok=!!(el&&el.offsetParent!==null&&rect&&rect.width>0&&rect.height>0&&rect.bottom<=safeBottom+1);
+  if(!ok&&logFailure)captureAnswerZoneDebug(stage,container,correctCase,task,{reason:'answer-zone-assertion'});
+  return {ok,exists:!!el,rendered:!!(el&&el.offsetParent!==null),rect:rect?{top:rect.top,bottom:rect.bottom,width:rect.width,height:rect.height}:null,safeBottom};
+}
+function ensureAnswerZoneVisible(container,{stage='unknown',correctCase=null,task=null,anchor=null,behavior='smooth',logFailure=true}={}){
+  return new Promise(resolve=>{
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const activeAtStart=currentTaskForStage(stage);
+      const staleAtStart=container.offsetParent===null||(task&&(!activeAtStart||activeAtStart.id!==task.id));
+      if(staleAtStart){resolve({ok:true,stale:true,scrolledBy:0});return}
+      const items=visibleAnswerItems(container);
+      if(!items.length){if(logFailure)captureAnswerZoneDebug(stage,container,correctCase,task,{reason:'answer-zone-empty'});resolve({ok:false,reason:'empty'});return}
+      const last=items[items.length-1];
+      const metrics=visualViewportMetrics();
+      const safeTop=metrics.offsetTop+ANSWER_SAFE_MARGIN;
+      const safeBottom=metrics.offsetTop+metrics.height-ANSWER_SAFE_MARGIN;
+      const lastRect=last.getBoundingClientRect();
+      let delta=Math.max(0,lastRect.bottom-safeBottom);
+      const anchorVisible=anchor&&anchor.offsetParent!==null;
+      if(anchorVisible){
+        const ar=anchor.getBoundingClientRect();
+        const lower=lastRect.bottom-safeBottom;
+        const upper=ar.top-safeTop;
+        if(lower<=upper){
+          if(0<lower)delta=lower;
+          else if(0>upper)delta=upper;
+          else delta=0;
+        }else delta=Math.max(0,lower);
+      }
+      if(Math.abs(delta)>.5)window.scrollBy({top:Math.round(delta),behavior});
+      const finish=()=>requestAnimationFrame(()=>{
+        const activeTask=currentTaskForStage(stage);
+        const stale=container.offsetParent===null||(task&&activeTask&&activeTask.id!==task.id);
+        if(stale){resolve({ok:true,stale:true,scrolledBy:Math.round(delta)});return}
+        const assertion=correctCase?qaAssertCorrectOption(stage,container,correctCase,task,{logFailure}):{ok:true};
+        resolve({...assertion,scrolledBy:Math.round(delta)});
+      });
+      if(Math.abs(delta)>.5&&behavior==='smooth')setTimeout(finish,420);else finish();
+    }));
+  });
+}
+function scheduleAnswerZoneVisibility(container,meta){
+  const first=ensureAnswerZoneVisible(container,{...meta,logFailure:false});
+  setTimeout(()=>ensureAnswerZoneVisible(container,{...meta,behavior:'auto',logFailure:true}),650);
+  return first;
+}
+function qaAssertStage3Pack(pack=state.s3packs?.[state.s3i]){
+  const ok=!!(pack&&Array.isArray(pack.cases)&&Array.isArray(pack.tasks)&&pack.tasks.every(task=>pack.cases.includes(task.c)));
+  if(!ok){state.qaLog.push({reason:'stage3-pack-case-mismatch',gameVersion:GAME_VERSION,runSeed:state.runSeed,stage:'stage3',mode:'sort',packCases:pack?.cases||[],tasks:(pack?.tasks||[]).map(t=>({id:t.id,case:t.c})),at:new Date().toISOString()});}
+  return ok;
+}
+function captureCurrentAnswerDebug(){
+  if(state.stage===1){const t=state.currentS1;return captureAnswerZoneDebug('stage1',$('s1Cases'),t?.c,t,{reason:'manual-capture'})}
+  if(state.stage===2){const t=state.currentS2;return captureAnswerZoneDebug('stage2',$('s2Cases'),t?.c,t,{reason:'manual-capture'})}
+  if(state.stage===3){const t=currentTaskForStage('stage3');return captureAnswerZoneDebug('stage3',$('sortDocks'),t?.c,t,{reason:'manual-capture'})}
+  if(state.stage===4){const t=state.boss?.[state.bossi];return captureAnswerZoneDebug('boss',$('bossCases'),t?.c,t,{reason:'manual-capture'})}
+  return {reason:'no-active-answer-zone',gameVersion:GAME_VERSION,runSeed:state.runSeed,stage:state.stage,mode:state.qaContext?.mode||null};
+}
 function energyMultiplier(){return [0.75,0.85,1.0,1.1,1.2][state.energy]||0.75}
 function updateHud(){
   $('score').textContent=state.score;$('streak').textContent=state.streak;
@@ -516,16 +621,17 @@ function paintModuleShards(screenId){const tiers=[state.moduleQuality.route,stat
 
 function resetState(seed){
   const explicit=Number.isInteger(seed);const nextSeed=explicit?seed>>>0:(Date.now()>>>0);rng=seedRng(nextSeed);const currentPlayer={...state.player};
-  Object.assign(state,{player:currentPlayer,reportObject:null,reportText:'',stage:0,score:0,streak:0,maxStreak:0,energy:4,difficulty:1,phase:'awaitingInput',attempts:0,resolvedTasks:0,firstTryCorrect:0,eventualCorrect:0,wrongAttempts:0,completed:0,taskStats:{},results:[],usedThisRun:new Set(),rewards:[],moduleQuality:{},runSeed:nextSeed,explicitSeed:explicit,reservedBoss:{hard:[],support:[]},s1:[],s1i:0,s1CasePlan:[],currentS1:null,s2:[],s2i:0,s2CasePlan:[],s2TruthPattern:[],currentS2:null,s2AwaitingCorrection:false,s3packs:[],s3i:0,s3CaseGroups:[],selectedSort:null,boss:[],bossi:0,bossCorrect:0,bossMistakes:0});
+  Object.assign(state,{player:currentPlayer,reportObject:null,reportText:'',stage:0,score:0,streak:0,maxStreak:0,energy:4,difficulty:1,phase:'awaitingInput',attempts:0,resolvedTasks:0,firstTryCorrect:0,eventualCorrect:0,wrongAttempts:0,completed:0,taskStats:{},results:[],usedThisRun:new Set(),rewards:[],moduleQuality:{},qaLog:[],qaContext:{stage:null,mode:null,taskId:null,correctCase:null},runSeed:nextSeed,explicitSeed:explicit,reservedBoss:{hard:[],support:[]},s1:[],s1i:0,s1CasePlan:[],currentS1:null,s2:[],s2i:0,s2CasePlan:[],s2TruthPattern:[],currentS2:null,s2AwaitingCorrection:false,s3packs:[],s3i:0,s3CaseGroups:[],selectedSort:null,boss:[],bossi:0,bossCorrect:0,bossMistakes:0});
   $('teacherReport').open=false;$('teacherReportBody').innerHTML='';qsa('.shard').forEach(x=>{x.classList.remove('on','q1','q2','q3')});qsa('.bossnode').forEach(x=>x.classList.remove('done','exact','damaged'));reserveBoss();updateHud();
 }
 function start(seed){resetState(seed);$('hud').hidden=false;state.stage=1;state.s1CasePlan=shuffle(CASE_KEYS);state.s1i=0;renderS1();setScreen('stage1');updateHud()}
 
 function renderS1(){
-  setPhase('awaitingInput');if(!state.currentS1){state.currentS1=chooseOne({caseKey:state.s1CasePlan[state.s1i],difficulty:state.difficulty});state.s1.push(state.currentS1)}const t=state.currentS1;
+  setPhase('awaitingInput');if(!state.currentS1){state.currentS1=chooseOne({caseKey:state.s1CasePlan[state.s1i],difficulty:state.difficulty});state.s1.push(state.currentS1)}const t=state.currentS1;setQAContext('stage1','route',t);
   $('s1Count').textContent=`Сигнал ${state.s1i+1}/6`;$('s1Sentence').innerHTML=mark(t);$('s1Feedback').className='feedback';$('s1Feedback').innerHTML='';$('s1Next').classList.remove('show');
   $('s1Intel').innerHTML=state.difficulty===2?'Следующий сигнал выбран из <strong>контекстных ловушек</strong>: ориентируйся на связь слов, а не на форму.':'Смотри не только на окончание. Найди слово, от которого зависит существительное, и задай вопрос.';
-  caseButtons($('s1Cases'),(c,b)=>{if(state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('s1Cases'),true);const ok=c===t.c;recordAttempt(t,ok,'route');resolveTask(t,ok,'route',100);b.classList.add(ok?'good':'bad');if(!ok)$('s1Cases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('s1Feedback'),ok,t,ok?`Верно: ${CASES[t.c].short}`:'',ok?null:c);$('s1Next').classList.add('show');setPhase('feedback')})
+  caseButtons($('s1Cases'),(c,b)=>{if(state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('s1Cases'),true);const ok=c===t.c;recordAttempt(t,ok,'route');resolveTask(t,ok,'route',100);b.classList.add(ok?'good':'bad');if(!ok)$('s1Cases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('s1Feedback'),ok,t,ok?`Верно: ${CASES[t.c].short}`:'',ok?null:c);$('s1Next').classList.add('show');setPhase('feedback')});
+  scheduleAnswerZoneVisibility($('s1Cases'),{stage:'stage1',correctCase:t.c,task:t});
 }
 $('s1Next').onclick=()=>{state.s1i++;state.currentS1=null;if(state.s1i<6)renderS1();else{const tier=moduleTier(['route']);state.moduleQuality.route=tier;applyShardQuality(['r1'],tier);showUnlock('◈','Маршрут '+tierText(tier),'Первый контур пройден. Качество модуля зависит от точности и сохранённого сигнала.',()=>{state.stage=2;paintModuleShards('stage2');prepareS2();setScreen('stage2');updateHud()})}};
 
@@ -543,7 +649,7 @@ function prepareS2(){
   state.s2i=0;state.currentS2=null;renderS2();
 }
 function renderS2(){
-  setPhase('awaitingInput');state.s2AwaitingCorrection=false;if(!state.currentS2){const isTrue=state.s2TruthPattern[state.s2i];const base=chooseOne({caseKey:state.s2CasePlan[state.s2i],difficulty:state.difficulty,predicate:isTrue?null:hasPlausibleDistractor});state.currentS2={...base,claimCase:isTrue?base.c:plausibleWrongCase(base)};state.s2.push(state.currentS2)}const t=state.currentS2;
+  setPhase('awaitingInput');state.s2AwaitingCorrection=false;if(!state.currentS2){const isTrue=state.s2TruthPattern[state.s2i];const base=chooseOne({caseKey:state.s2CasePlan[state.s2i],difficulty:state.difficulty,predicate:isTrue?null:hasPlausibleDistractor});state.currentS2={...base,claimCase:isTrue?base.c:plausibleWrongCase(base)};state.s2.push(state.currentS2)}const t=state.currentS2;setQAContext('stage2','scanner-verdict',t);
   $('s2Count').textContent=`Проверка ${state.s2i+1}/5`;$('s2Sentence').innerHTML=mark(t);$('s2Claim').innerHTML=`Система утверждает: <strong>${esc(t.w)}</strong> — <strong>${CASES[t.claimCase].name} падеж</strong>.`;$('correction').classList.remove('show');$('s2Feedback').className='feedback';$('s2Feedback').innerHTML='';$('s2Next').classList.remove('show');
   qsa('#binaryRow .binary').forEach(b=>{b.disabled=false;b.classList.remove('good','bad')});caseButtons($('s2Cases'),(c,b)=>resolveS2Correction(c,b));
   $('s2Intel').innerHTML=state.difficulty===2?'Сканер использует более коварные совпадения форм. Проверяй управление и роль слова в предложении.':'Проверяй связь слов. Ошибочные метки строятся только из правдоподобных смешений, а не случайных падежей.';
@@ -551,7 +657,7 @@ function renderS2(){
 function resolveS2Correction(c,b){const t=state.currentS2;if(!state.s2AwaitingCorrection||state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('s2Cases'),true);const ok=c===t.c;recordAttempt(t,ok,'scanner-correct');resolveTask(t,ok,'scanner-correct',110);b.classList.add(ok?'good':'bad');if(!ok)$('s2Cases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('s2Feedback'),ok,t,ok?'Исправление принято.':'',ok?null:c);$('s2Next').classList.add('show');setPhase('feedback')}
 qsa('#binaryRow .binary').forEach(btn=>btn.addEventListener('click',()=>{
   if(state.phase!=='awaitingInput')return;const t=state.currentS2;setPhase('resolving');disableButtons($('binaryRow'),true);const saysCorrect=t.claimCase===t.c;const verdict=btn.dataset.verdict==='true';const ok=verdict===saysCorrect;recordAttempt(t,ok,'scanner-verdict');
-  if(ok&&!verdict){btn.classList.add('good');state.s2AwaitingCorrection=true;$('correction').classList.add('show');$('s2Feedback').className='feedback show good';$('s2Feedback').innerHTML='✓ Сбой найден. Теперь восстанови правильный падеж.';setTimeout(()=>{setPhase('awaitingInput');disableButtons($('s2Cases'),false)},220)}
+  if(ok&&!verdict){btn.classList.add('good');state.s2AwaitingCorrection=true;setQAContext('stage2','scanner-correction',t);$('correction').classList.add('show');$('s2Feedback').className='feedback show good';$('s2Feedback').innerHTML='✓ Сбой найден. Теперь восстанови правильный падеж.';scheduleAnswerZoneVisibility($('s2Cases'),{stage:'stage2',correctCase:t.c,task:t});setTimeout(()=>{setPhase('awaitingInput');disableButtons($('s2Cases'),false)},220)}
   else{resolveTask(t,ok,'scanner-verdict',110);btn.classList.add(ok?'good':'bad');if(!ok){const right=qsa('#binaryRow .binary').find(b=>(b.dataset.verdict==='true')===saysCorrect);if(right)right.classList.add('good')}feedback($('s2Feedback'),ok,t,ok?'Разметка действительно верна.':'',(!ok&&!saysCorrect)?t.claimCase:null);$('s2Next').classList.add('show');setPhase('feedback')}
 }));
 $('s2Next').onclick=()=>{state.s2i++;state.currentS2=null;if(state.s2i<5)renderS2();else{const tier=moduleTier(['scanner-verdict','scanner-correct']);state.moduleQuality.scanner=tier;applyShardQuality(['r2b'],tier);showUnlock('⌬','Сканер '+tierText(tier),'Модуль пройден. Его состояние отражает качество проверки, а не просто факт прохождения.',()=>{state.stage=3;paintModuleShards('stage3');prepareS3();setScreen('stage3');updateHud()})}};
@@ -559,9 +665,9 @@ $('s2Next').onclick=()=>{state.s2i++;state.currentS2=null;if(state.s2i<5)renderS
 function prepareS3(){const cases=shuffle(CASE_KEYS);state.s3CaseGroups=[cases.slice(0,3),cases.slice(3,6)];state.s3packs=[];state.s3i=0;buildS3Pack(0);renderS3()}
 function buildS3Pack(index){const cs=state.s3CaseGroups[index];const tasks=[];for(const c of cs)tasks.push(chooseOne({caseKey:c,difficulty:state.difficulty}));const extraCase=shuffle(cs)[0];tasks.push(chooseOne({caseKey:extraCase,difficulty:state.difficulty}));state.s3packs[index]={cases:cs,tasks:shuffle(tasks)};return state.s3packs[index]}
 function renderS3(){
-  setPhase('awaitingInput');state.selectedSort=null;const pack=state.s3packs[state.s3i];$('s3Count').textContent=`Пакет ${state.s3i+1}/2`;$('sortCards').innerHTML='';$('sortDocks').innerHTML='';$('s3Feedback').className='feedback show';$('s3Feedback').textContent='Выбери карточку, затем сектор падежа.';$('s3Next').classList.remove('show');
+  setPhase('awaitingInput');state.selectedSort=null;const pack=state.s3packs[state.s3i];if(!qaAssertStage3Pack(pack))throw new Error('Stage 3 pack contains task outside available docks');$('s3Count').textContent=`Пакет ${state.s3i+1}/2`;$('sortCards').innerHTML='';$('sortDocks').innerHTML='';$('s3Feedback').className='feedback show';$('s3Feedback').textContent='Выбери карточку, затем сектор падежа.';$('s3Next').classList.remove('show');
   const zone=$('sortCards').closest('.sortzone');zone.classList.remove('has-selection');
-  pack.tasks.forEach(t=>{const d=document.createElement('div');d.className='sortcard';d.dataset.id=t.id;d.innerHTML=mark(t);d.onclick=()=>{if(state.phase!=='awaitingInput'||d.classList.contains('done'))return;qsa('#sortCards .sortcard').forEach(x=>x.classList.remove('selected'));d.classList.add('selected');state.selectedSort=t.id;zone.classList.add('has-selection');$('s3Feedback').className='feedback show';$('s3Feedback').textContent='Карточка захвачена. Выбери сектор падежа.'};$('sortCards').appendChild(d)});
+  pack.tasks.forEach(t=>{const d=document.createElement('div');d.className='sortcard';d.dataset.id=t.id;d.innerHTML=mark(t);d.onclick=()=>{if(state.phase!=='awaitingInput'||d.classList.contains('done'))return;qsa('#sortCards .sortcard').forEach(x=>x.classList.remove('selected'));d.classList.add('selected');state.selectedSort=t.id;setQAContext('stage3','sort',t);zone.classList.add('has-selection');$('s3Feedback').className='feedback show';$('s3Feedback').textContent='Карточка захвачена. Выбери сектор падежа.';scheduleAnswerZoneVisibility(zone,{stage:'stage3',correctCase:t.c,task:t,anchor:d})};$('sortCards').appendChild(d)});
   pack.cases.forEach(c=>{const b=document.createElement('button');b.className='dock';b.dataset.case=c;b.innerHTML=`<b>${CASES[c].short} · ${CASES[c].name}</b><span>${CASES[c].q}</span>`;b.onclick=()=>sortTo(c,b);$('sortDocks').appendChild(b)});
   $('adaptiveIntel').innerHTML=state.difficulty===2?'Этот пакет собран на уровне 2: больше <strong>контекстных и формальных смешений</strong>.':'Этот пакет собран на базовом уровне. Следующий пакет изменится, если появится серия из трёх безошибочных решений.';
 }
@@ -582,8 +688,9 @@ function prepareBoss(){
   state.boss=shuffle(chosen);state.boss.forEach(t=>state.usedThisRun.add(t.id));state.bossi=0;state.bossCorrect=0;state.bossMistakes=0;paintModuleShards('boss');renderBoss();
 }
 function renderBoss(){
-  setPhase('awaitingInput');const t=state.boss[state.bossi];$('bossCount').textContent=`Сигнал ${state.bossi+1}/4`;$('bossSentence').innerHTML=mark(t);$('bossFeedback').className='feedback';$('bossFeedback').innerHTML='';$('bossNext').classList.remove('show');
-  bossButtons($('bossCases'),(c,b)=>{if(state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('bossCases'),true);const ok=c===t.c;recordAttempt(t,ok,'boss');resolveTask(t,ok,'boss',190);if(ok)state.bossCorrect++;else state.bossMistakes++;b.classList.add(ok?'good':'bad');if(!ok)$('bossCases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('bossFeedback'),ok,t,ok?'Финальный сигнал принят.':'',ok?null:c);const node=qsa('.bossnode')[state.bossi];node.classList.add('done',ok?'exact':'damaged');if(!ok){const card=$('missionBoss');card.classList.remove('boss-hit');void card.offsetWidth;card.classList.add('boss-hit')}$('bossNext').classList.add('show');setPhase('feedback')})
+  setPhase('awaitingInput');const t=state.boss[state.bossi];setQAContext('boss','boss',t);$('bossCount').textContent=`Сигнал ${state.bossi+1}/4`;$('bossSentence').innerHTML=mark(t);$('bossFeedback').className='feedback';$('bossFeedback').innerHTML='';$('bossNext').classList.remove('show');
+  bossButtons($('bossCases'),(c,b)=>{if(state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('bossCases'),true);const ok=c===t.c;recordAttempt(t,ok,'boss');resolveTask(t,ok,'boss',190);if(ok)state.bossCorrect++;else state.bossMistakes++;b.classList.add(ok?'good':'bad');if(!ok)$('bossCases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('bossFeedback'),ok,t,ok?'Финальный сигнал принят.':'',ok?null:c);const node=qsa('.bossnode')[state.bossi];node.classList.add('done',ok?'exact':'damaged');if(!ok){const card=$('missionBoss');card.classList.remove('boss-hit');void card.offsetWidth;card.classList.add('boss-hit')}$('bossNext').classList.add('show');setPhase('feedback')});
+  scheduleAnswerZoneVisibility($('bossCases'),{stage:'boss',correctCase:t.c,task:t});
 }
 $('bossNext').onclick=()=>{state.bossi++;if(state.bossi<4)renderBoss();else finish()};
 function finish(){
@@ -625,7 +732,7 @@ function validate(){
   for(const fam of new Set(BANK.map(t=>t.fam)))if(!FAMILY_LABELS[fam])errors.push('report-category:'+fam);
   return {ok:errors.length===0,errors,count:BANK.length,hard,cases:counts,scannerEligible:scanner.length,scannerCases:[...scannerCases],scannerFalseClaimCases:[...falseClaimCases],scannerTrueClaimCases:[...trueClaimCaseSet],totalTasks:TOTAL_TASKS};
 }
-window.__GAME__={BANK,CASES,state,start,finish,resetState,validate,setSeed:(seed)=>start(seed),setPlayer,getPlayer:()=>({...state.player}),getReport:()=>state.reportObject?JSON.parse(JSON.stringify(state.reportObject)):null,getReportText:()=>state.reportText,getLastRunIds:()=>[...lastRunIds],getRunIds:()=>[...state.usedThisRun],hasPlausibleDistractor,controlledTruthPattern,scannerFalseClaimCases:()=>[...scannerFalseClaimCases()],scannerTrueClaimCases,pedagogicalWhy,feedbackQACheck,buildReportObject,buildReportText,copyTeacherReport,changePlayer};
+window.__GAME__={BANK,CASES,state,start,finish,resetState,validate,setSeed:(seed)=>start(seed),setPlayer,getPlayer:()=>({...state.player}),getReport:()=>state.reportObject?JSON.parse(JSON.stringify(state.reportObject)):null,getReportText:()=>state.reportText,getLastRunIds:()=>[...lastRunIds],getRunIds:()=>[...state.usedThisRun],hasPlausibleDistractor,controlledTruthPattern,scannerFalseClaimCases:()=>[...scannerFalseClaimCases()],scannerTrueClaimCases,pedagogicalWhy,feedbackQACheck,buildReportObject,buildReportText,copyTeacherReport,changePlayer,ensureAnswerZoneVisible,qaAssertCorrectOption,qaAssertStage3Pack,captureCurrentAnswerDebug,getQALog:()=>state.qaLog.map(x=>JSON.parse(JSON.stringify(x))),getQAContext:()=>JSON.parse(JSON.stringify(state.qaContext))};
 const restoredPlayer=loadSessionPlayer();if(restoredPlayer){state.player=restoredPlayer;setPlayerInputs(restoredPlayer)}else setPlayerInputs(state.player);
 $('hud').hidden=true;updateHud();
 })();
