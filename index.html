@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Орбита падежей — мини-игра v2.1</title>
+<style>
+:root{
+  --bg:#070b18; --panel:#11182a; --panel2:#18223a; --text:#f4f7ff; --muted:#9fb0cf;
+  --accent:#67e8f9; --accent2:#a78bfa; --good:#5ee6a8; --bad:#ff6b8a; --warn:#ffd166;
+  --shadow:0 24px 70px rgba(0,0,0,.45); --r:22px;
+}
+*{box-sizing:border-box} html,body{height:100%} body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:
+ radial-gradient(circle at 15% 10%,rgba(103,232,249,.15),transparent 28%),
+ radial-gradient(circle at 82% 18%,rgba(167,139,250,.18),transparent 30%),
+ linear-gradient(145deg,#050811 0%,#0a1020 55%,#080d19 100%);color:var(--text);overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.25;background-image:radial-gradient(circle,#fff 0 1px,transparent 1.2px);background-size:34px 34px;mask-image:linear-gradient(to bottom,black,transparent 75%)}
+button{font:inherit;color:inherit} button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.app{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+.shell{width:min(1120px,100%);min-height:min(760px,calc(100vh - 48px));position:relative;border:1px solid rgba(255,255,255,.09);border-radius:30px;background:linear-gradient(180deg,rgba(18,26,47,.92),rgba(8,13,25,.94));box-shadow:var(--shadow);overflow:hidden;backdrop-filter:blur(18px)}
+.topbar{display:flex;gap:16px;align-items:center;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(7,11,24,.55)}
+.brand{display:flex;align-items:center;gap:12px;min-width:190px}.brandmark{width:38px;height:38px;border-radius:12px;background:conic-gradient(from 45deg,var(--accent),var(--accent2),var(--accent));box-shadow:0 0 30px rgba(103,232,249,.35);position:relative}.brandmark:after{content:"";position:absolute;inset:8px;border-radius:9px;background:#0c1222}.brand b{letter-spacing:.04em}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.hud{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.pill{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.07);font-size:13px;color:#dce7ff}.pill strong{font-size:14px}.energy{letter-spacing:2px;color:var(--warn)}
+.progressline{height:4px;background:rgba(255,255,255,.06);position:relative}.progressline>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 16px rgba(103,232,249,.7);transition:width .45s ease}
+.screen{display:none;min-height:650px;padding:38px}.screen.active{display:block;animation:screenIn .45s ease both}@keyframes screenIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:center;min-height:560px}.eyebrow{color:var(--accent);text-transform:uppercase;letter-spacing:.16em;font-weight:800;font-size:12px}.hero h1{font-size:clamp(44px,7vw,78px);line-height:.94;margin:12px 0 20px;letter-spacing:-.055em}.hero p{font-size:18px;line-height:1.6;color:#c7d4ef;max-width:640px}.cta{border:0;border-radius:16px;background:linear-gradient(135deg,var(--accent),#7dd3fc 48%,var(--accent2));color:#07101d;font-weight:900;padding:16px 22px;cursor:pointer;box-shadow:0 16px 38px rgba(103,232,249,.22);transition:.2s transform,.2s filter}.cta:hover{transform:translateY(-2px);filter:brightness(1.05)}.ghost{border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.055);padding:13px 18px;border-radius:14px;cursor:pointer}.ghost:hover{background:rgba(255,255,255,.09)}
+.reactor{aspect-ratio:1;max-width:390px;margin:auto;position:relative;display:grid;place-items:center}.ring{position:absolute;border:1px solid rgba(103,232,249,.28);border-radius:50%;animation:spin 12s linear infinite}.ring.r1{inset:5%}.ring.r2{inset:18%;animation-direction:reverse;animation-duration:8s;border-color:rgba(167,139,250,.32)}.ring.r3{inset:31%;animation-duration:5s}.ring:before,.ring:after{content:"";position:absolute;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 22px currentColor;top:50%;left:-6px}.ring:after{left:auto;right:-6px;background:var(--accent2)}@keyframes spin{to{transform:rotate(360deg)}}.core{width:130px;height:130px;border-radius:32px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(103,232,249,.18),rgba(167,139,250,.2));border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 0 40px rgba(103,232,249,.12),0 0 70px rgba(103,232,249,.18);font-size:54px;transform:rotate(45deg)}.core span{transform:rotate(-45deg)}
+.stagehead{display:flex;gap:16px;align-items:flex-start;margin-bottom:28px}.stageicon{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:26px;background:linear-gradient(145deg,rgba(103,232,249,.16),rgba(167,139,250,.15));border:1px solid rgba(255,255,255,.1)}.stagehead h2{margin:3px 0 6px;font-size:30px}.stagehead p{margin:0;color:var(--muted)}
+.gamegrid{display:grid;grid-template-columns:1fr 310px;gap:22px}.missioncard{position:relative;min-height:475px;border-radius:26px;padding:28px;background:linear-gradient(160deg,rgba(25,36,63,.95),rgba(12,18,34,.95));border:1px solid rgba(255,255,255,.1);overflow:hidden}.missioncard:after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(103,232,249,.1),transparent 66%);right:-120px;top:-120px;pointer-events:none}.sidecard{border-radius:26px;padding:22px;background:rgba(10,16,30,.7);border:1px solid rgba(255,255,255,.08);min-height:475px}.sidecard h3{margin:0 0 14px;font-size:14px;text-transform:uppercase;letter-spacing:.13em;color:#9fb0cf}.intel{padding:14px;border-radius:16px;background:rgba(255,255,255,.045);color:#c9d6ed;font-size:14px;line-height:1.5;margin-bottom:12px}.intel strong{color:#fff}.rewards{display:flex;gap:8px;flex-wrap:wrap}.shard{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.15);filter:grayscale(1);opacity:.45}.shard.on{filter:none;opacity:1;border-style:solid;background:linear-gradient(145deg,rgba(103,232,249,.14),rgba(167,139,250,.14));box-shadow:0 0 18px rgba(103,232,249,.12);animation:pop .5s ease}@keyframes pop{50%{transform:scale(1.16) rotate(6deg)}}
+.sentence{font-size:clamp(24px,3.4vw,39px);line-height:1.35;font-weight:760;letter-spacing:-.025em;margin:18px 0 10px;max-width:820px}.target{color:#fff;background:linear-gradient(90deg,rgba(103,232,249,.18),rgba(167,139,250,.2));border-bottom:2px solid var(--accent);padding:0 .1em;border-radius:5px}.micro{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:800}.prompt{color:#d7e2f8;font-size:15px;margin:6px 0 22px}.casewheel{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.casebtn,.binary,.dock,.cardbtn{border:1px solid rgba(255,255,255,.11);background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.03));border-radius:17px;padding:15px 12px;cursor:pointer;transition:.18s transform,.18s background,.18s border-color;text-align:left}.casebtn:hover,.binary:hover,.dock:hover,.cardbtn:hover{transform:translateY(-2px);background:rgba(103,232,249,.08);border-color:rgba(103,232,249,.35)}.casebtn b{display:block;font-size:15px}.casebtn small{color:var(--muted);font-size:11px}.casebtn.good,.binary.good,.dock.good{background:rgba(94,230,168,.15);border-color:rgba(94,230,168,.65)}.casebtn.bad,.binary.bad,.dock.bad{background:rgba(255,107,138,.12);border-color:rgba(255,107,138,.7)}
+.feedback{min-height:54px;margin-top:18px;padding:13px 15px;border-radius:15px;background:rgba(255,255,255,.04);color:#cfd9ee;display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(5px);transition:.2s}.feedback.show{opacity:1;transform:none}.feedback.good{border:1px solid rgba(94,230,168,.3)}.feedback.bad{border:1px solid rgba(255,107,138,.32)}.nextrow{display:flex;justify-content:flex-end;margin-top:16px}.nextbtn{display:none}.nextbtn.show{display:inline-flex}
+.claim{margin:20px 0;padding:20px;border-radius:18px;background:rgba(255,255,255,.05);border-left:4px solid var(--accent2);font-size:20px}.binaryrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}.binary{text-align:center;font-weight:850;padding:18px}.correction{display:none;margin-top:18px}.correction.show{display:block;animation:screenIn .28s ease}.correction .casewheel{grid-template-columns:repeat(3,1fr)}
+.sortzone{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}.sortcards{display:grid;gap:10px}.sortcard{padding:15px 16px;border-radius:16px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09);cursor:pointer;transition:.18s}.sortcard:hover{transform:translateY(-1px);border-color:rgba(103,232,249,.4)}.sortcard.selected{outline:2px solid var(--accent);background:rgba(103,232,249,.1)}.sortcard.done{opacity:.38;pointer-events:none;text-decoration:none}.sortcard strong{color:#fff}.docks{display:grid;gap:10px}.dock{min-height:76px;display:flex;align-items:center;justify-content:space-between}.dock b{font-size:16px}.dock span{font-size:12px;color:var(--muted)}.dock.flash{animation:dockflash .55s ease}@keyframes dockflash{50%{transform:scale(1.025)}}
+.boss{border:1px solid rgba(255,107,138,.24);box-shadow:inset 0 0 50px rgba(255,107,138,.035)}.bossbar{display:flex;gap:8px;margin:10px 0 24px}.bossnode{height:8px;flex:1;border-radius:999px;background:rgba(255,255,255,.07)}.bossnode.done{background:linear-gradient(90deg,var(--bad),var(--accent2));box-shadow:0 0 12px rgba(255,107,138,.28)}
+.overlay{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(4,7,15,.72);backdrop-filter:blur(12px)}.overlay.show{display:flex;animation:screenIn .25s ease}.unlock{width:min(560px,100%);padding:34px;border-radius:28px;text-align:center;background:linear-gradient(160deg,#151f37,#0d1425);border:1px solid rgba(255,255,255,.12);box-shadow:var(--shadow)}.unlock .big{font-size:62px;display:block;margin-bottom:12px}.unlock h2{font-size:34px;margin:0 0 10px}.unlock p{color:var(--muted);line-height:1.55}.unlock .cta{margin-top:12px}
+.finalwrap{max-width:900px;margin:auto;text-align:center;padding-top:10px}.finalsig{font-size:72px;filter:drop-shadow(0 0 26px rgba(103,232,249,.35));animation:float 2.4s ease-in-out infinite}@keyframes float{50%{transform:translateY(-8px)}}.finalwrap h1{font-size:48px;margin:8px 0}.finalwrap>p{color:var(--muted);font-size:17px}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:30px 0}.stat{padding:18px 10px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}.stat strong{display:block;font-size:28px}.stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.skillnote{max-width:670px;margin:0 auto 24px;padding:16px;border-radius:16px;background:rgba(103,232,249,.07);border:1px solid rgba(103,232,249,.16);color:#d9eff7}
+.pulse-good{animation:goodpulse .55s ease}@keyframes goodpulse{40%{box-shadow:inset 0 0 0 999px rgba(94,230,168,.055)}}.shake{animation:shake .4s ease}@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);z-index:10;opacity:0;pointer-events:none;padding:11px 16px;border-radius:999px;background:#eff6ff;color:#0c1424;font-weight:800;box-shadow:0 12px 40px rgba(0,0,0,.35);transition:.25s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:820px){.screen{padding:24px}.hero{grid-template-columns:1fr}.hero .reactor{display:none}.gamegrid{grid-template-columns:1fr}.sidecard{min-height:auto}.casewheel{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}.topbar{align-items:flex-start}.brand{min-width:auto}.brand small{display:none}.sortzone{grid-template-columns:1fr}.shell{min-height:calc(100vh - 24px)}.app{padding:12px}}
+@media(max-width:520px){.hud .pill:nth-child(2){display:none}.screen{padding:20px}.missioncard{padding:20px}.sentence{font-size:25px}.casewheel{grid-template-columns:1fr 1fr}.hero h1{font-size:48px}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}}
+
+/* v2 QA fixes */
+.hud[hidden]{display:none!important}
+button:disabled{cursor:default!important;pointer-events:none;opacity:.62;transform:none!important;filter:saturate(.72)}
+button:disabled:hover{transform:none!important;background:inherit;border-color:rgba(255,255,255,.11)}
+.casebtn:disabled.good,.binary:disabled.good,.dock:disabled.good,.bosscase:disabled.good{opacity:1;background:rgba(94,230,168,.15);border-color:rgba(94,230,168,.65)}
+.casebtn:disabled.bad,.binary:disabled.bad,.dock:disabled.bad,.bosscase:disabled.bad{opacity:1;background:rgba(255,107,138,.12);border-color:rgba(255,107,138,.7)}
+.energy-mult{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:0}
+.shard.q1{box-shadow:inset 0 0 0 1px rgba(255,107,138,.35)}
+.shard.q2{box-shadow:0 0 16px rgba(103,232,249,.16)}
+.shard.q3{box-shadow:0 0 22px rgba(94,230,168,.28);border-color:rgba(94,230,168,.55)}
+.bosscases{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.bosscase{border:1px solid rgba(255,255,255,.12);background:linear-gradient(145deg,rgba(255,107,138,.075),rgba(167,139,250,.05));border-radius:17px;padding:16px 12px;cursor:pointer;transition:.18s transform,.18s background,.18s border-color;text-align:left}
+.bosscase:hover{transform:translateY(-2px);border-color:rgba(255,107,138,.42);background:rgba(255,107,138,.09)}
+.bosscase b{display:block;font-size:15px}.bosscase small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+.bosscase.good{background:rgba(94,230,168,.15);border-color:rgba(94,230,168,.65)}
+.bosscase.bad{background:rgba(255,107,138,.14);border-color:rgba(255,107,138,.74)}
+.bossnode.exact{background:linear-gradient(90deg,var(--good),var(--accent));box-shadow:0 0 15px rgba(94,230,168,.34)}
+.bossnode.damaged{background:repeating-linear-gradient(115deg,var(--bad) 0 7px,#4b1930 7px 12px);box-shadow:0 0 16px rgba(255,107,138,.42);animation:nodeGlitch .36s steps(2) 2}
+@keyframes nodeGlitch{25%{transform:translateX(-3px) skewX(8deg)}60%{transform:translateX(3px) skewX(-7deg)}100%{transform:none}}
+.missioncard.boss.boss-hit{animation:bossHit .45s ease}@keyframes bossHit{30%{filter:hue-rotate(-18deg) contrast(1.22);transform:translateX(-4px)}65%{transform:translateX(4px)}100%{filter:none;transform:none}}
+.stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+@media(max-width:520px){
+  .hud .pill:nth-child(4){display:none}
+  .hud .pill:nth-child(2){display:flex}
+  .hud{gap:6px}.pill{padding:7px 9px;font-size:11px}.pill strong{font-size:12px}
+  .sortzone{gap:10px}
+  .sortzone.has-selection .sortcard:not(.selected){display:none}
+  .sortzone.has-selection .sortcard.done{display:none}
+  .sortzone.has-selection .docks{position:sticky;bottom:8px;z-index:3;padding:10px;border-radius:18px;background:rgba(7,11,24,.94);border:1px solid rgba(255,255,255,.1);box-shadow:0 -16px 34px rgba(0,0,0,.34)}
+  .dock{min-height:62px}
+  .bosscases{grid-template-columns:1fr 1fr}
+}
+
+</style>
+</head>
+<body>
+<div class="app"><main class="shell" id="shell">
+  <header class="topbar">
+    <div class="brand"><div class="brandmark"></div><div><b>CASE//ORBIT</b><small>Навигационная миссия</small></div></div>
+    <div class="hud" id="hud" hidden>
+      <div class="pill">Счёт <strong id="score">0</strong></div>
+      <div class="pill">Серия <strong id="streak">0</strong></div>
+      <div class="pill">Сигнал <strong class="energy" id="energy">◆◆◆◆</strong><span class="energy-mult" id="energyMult">×1.20</span></div>
+      <div class="pill">Этап <strong id="stageLabel">1/4</strong></div>
+    </div>
+  </header>
+  <div class="progressline"><i id="progressBar"></i></div>
+
+  <section class="screen active" id="intro">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Миссия 06 / Падежный контур</div>
+        <h1>Восстанови<br>навигацию.</h1>
+        <p>Система потеряла связи между словами. Чтобы вернуть маршрут, определяй падеж существительного <b>по смыслу, вопросу и управлению</b> — окончания могут маскировать ответ.</p>
+        <button class="cta" id="startBtn">Запустить миссию →</button>
+      </div>
+      <div class="reactor" aria-hidden="true"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div><div class="core"><span>⌁</span></div></div>
+    </div>
+  </section>
+
+  <section class="screen" id="stage1">
+    <div class="stagehead"><div class="stageicon">◈</div><div><div class="eyebrow">Этап 1 · Маршрут</div><h2>Калибровка порталов</h2><p>Определи падеж выделенного существительного и направь сигнал в нужный сектор.</p></div></div>
+    <div class="gamegrid"><div class="missioncard" id="mission1">
+      <div class="micro" id="s1Count">Сигнал 1/6</div><div class="sentence" id="s1Sentence"></div><div class="prompt">Какой падеж у выделенного слова?</div>
+      <div class="casewheel" id="s1Cases"></div><div class="feedback" id="s1Feedback"></div><div class="nextrow"><button class="cta nextbtn" id="s1Next">Следующий сигнал →</button></div>
+    </div><aside class="sidecard"><h3>Навигационный канал</h3><div class="intel" id="s1Intel">Смотри не только на окончание. Найди слово, от которого зависит существительное, и задай вопрос.</div><h3>Открытые модули</h3><div class="rewards"><div class="shard" id="r1">◈</div><div class="shard" id="r2">⌬</div><div class="shard" id="r3">✦</div></div></aside></div>
+  </section>
+
+  <section class="screen" id="stage2">
+    <div class="stagehead"><div class="stageicon">⌬</div><div><div class="eyebrow">Этап 2 · Диагностика</div><h2>Сканер ошибок</h2><p>Проверь автоматическую разметку системы. Если она ошиблась — восстанови правильный падеж.</p></div></div>
+    <div class="gamegrid"><div class="missioncard" id="mission2">
+      <div class="micro" id="s2Count">Проверка 1/5</div><div class="sentence" id="s2Sentence"></div><div class="claim" id="s2Claim"></div>
+      <div class="binaryrow" id="binaryRow"><button class="binary" data-verdict="true">✓ Разметка верна</button><button class="binary" data-verdict="false">⚠ Здесь ошибка</button></div>
+      <div class="correction" id="correction"><div class="prompt">Исправь разметку: какой падеж верный?</div><div class="casewheel" id="s2Cases"></div></div>
+      <div class="feedback" id="s2Feedback"></div><div class="nextrow"><button class="cta nextbtn" id="s2Next">Продолжить →</button></div>
+    </div><aside class="sidecard"><h3>Протокол</h3><div class="intel"><strong>Шаг 1.</strong> Проверь утверждение.<br><strong>Шаг 2.</strong> Если видишь сбой, укажи верный падеж.</div><div class="intel" id="s2Intel">Система иногда специально путает формы, похожие по окончанию.</div><h3>Открытые модули</h3><div class="rewards"><div class="shard on">◈</div><div class="shard" id="r2b">⌬</div><div class="shard" id="r3b">✦</div></div></aside></div>
+  </section>
+
+  <section class="screen" id="stage3">
+    <div class="stagehead"><div class="stageicon">⇄</div><div><div class="eyebrow">Этап 3 · Сортировка</div><h2>Распредели сигналы</h2><p>Выбери карточку, затем отправь её в сектор нужного падежа. Здесь нужно держать в голове несколько контекстов сразу.</p></div></div>
+    <div class="gamegrid"><div class="missioncard" id="mission3">
+      <div class="micro" id="s3Count">Пакет 1/2</div><div class="sortzone"><div class="sortcards" id="sortCards"></div><div class="docks" id="sortDocks"></div></div>
+      <div class="feedback show" id="s3Feedback">Выбери карточку слева, затем сектор справа.</div><div class="nextrow"><button class="cta nextbtn" id="s3Next">Следующий пакет →</button></div>
+    </div><aside class="sidecard"><h3>Режим адаптации</h3><div class="intel" id="adaptiveIntel">Сложность подстраивается по серии: уверенная игра открывает более коварные совпадения форм.</div><h3>Открытые модули</h3><div class="rewards"><div class="shard on">◈</div><div class="shard on">⌬</div><div class="shard" id="r3c">✦</div></div></aside></div>
+  </section>
+
+  <section class="screen" id="boss">
+    <div class="stagehead"><div class="stageicon">✦</div><div><div class="eyebrow">Финальный раунд · Blackout</div><h2>Навигация без подсказок</h2><p>Четыре сигнала подряд. Только контекст и шесть падежей — без подсказки вопросом.</p></div></div>
+    <div class="gamegrid"><div class="missioncard boss" id="missionBoss"><div class="bossbar" id="bossBar"><i class="bossnode"></i><i class="bossnode"></i><i class="bossnode"></i><i class="bossnode"></i></div>
+      <div class="micro" id="bossCount">Сигнал 1/4</div><div class="sentence" id="bossSentence"></div><div class="bosscases" id="bossCases"></div><div class="feedback" id="bossFeedback"></div><div class="nextrow"><button class="cta nextbtn" id="bossNext">Следующий →</button></div>
+    </div><aside class="sidecard"><h3>Blackout</h3><div class="intel">В финале система не показывает вопрос и не даёт обучающую подсказку до ответа.</div><div class="intel">За каждый точный сигнал — повышенный балл.</div><h3>Модули</h3><div class="rewards"><div class="shard on">◈</div><div class="shard on">⌬</div><div class="shard on">✦</div></div></aside></div>
+  </section>
+
+  <section class="screen" id="final"><div class="finalwrap"><div class="finalsig">◉</div><div class="eyebrow">Миссия завершена</div><h1 id="finalTitle">Навигация восстановлена</h1><p id="finalSub">Контур снова держит курс.</p><div class="stats">
+    <div class="stat"><strong id="fScore">0</strong><span>баллы</span></div><div class="stat"><strong id="fCorrect">0/0</strong><span>с первой попытки</span></div><div class="stat"><strong id="fResolved">0/0</strong><span>решено верно</span></div><div class="stat"><strong id="fErrors">0</strong><span>ошибочных попыток</span></div><div class="stat"><strong id="fStreak">0</strong><span>макс. серия</span></div><div class="stat"><strong id="fEnergy">0</strong><span>сигнал</span></div><div class="stat"><strong id="fBoss">0/4</strong><span>Blackout</span></div>
+  </div><div class="skillnote" id="skillNote"></div><button class="cta" id="restartBtn">Играть снова ↻</button></div></section>
+
+  <div class="overlay" id="overlay"><div class="unlock"><span class="big" id="unlockIcon">◈</span><div class="eyebrow">Модуль восстановлен</div><h2 id="unlockTitle">Маршрут стабилен</h2><p id="unlockText">Открывается следующий сектор.</p><button class="cta" id="unlockBtn">Продолжить миссию →</button></div></div>
+</main></div><div class="toast" id="toast"></div>
+<script>
+(() => {
+'use strict';
+// CASE//ORBIT v2.2 — acceptance fix: Scanner claim symmetry prevents deterministic truth roles.
+const CASES = {
+  nom:{short:'И.п.',name:'Именительный',q:'кто? что?'}, gen:{short:'Р.п.',name:'Родительный',q:'кого? чего?'},
+  dat:{short:'Д.п.',name:'Дательный',q:'кому? чему?'}, acc:{short:'В.п.',name:'Винительный',q:'кого? что?'},
+  ins:{short:'Т.п.',name:'Творительный',q:'кем? чем?'}, prep:{short:'П.п.',name:'Предложный',q:'о ком? о чём?'}
+};
+const BANK = [
+{id:'n1',s:'На горизонте появился поезд.',w:'поезд',c:'nom',d:1,why:'появился (кто? что?) поезд',span:[22,27],fam:'syntax-subject',pd:['acc']},
+{id:'n2',s:'Тишина заполнила коридор.',w:'Тишина',c:'nom',d:1,why:'тишина (что?) заполнила',span:[0,6],fam:'syntax-subject',pd:[]},
+{id:'n3',s:'Ветер раскачивал ветви.',w:'Ветер',c:'nom',d:1,why:'ветер (что?) раскачивал',span:[0,5],fam:'syntax-subject',pd:['acc']},
+{id:'n4',s:'Рюкзак лежал у двери.',w:'Рюкзак',c:'nom',d:1,why:'рюкзак (что?) лежал',span:[0,6],fam:'syntax-subject',pd:['acc']},
+{id:'g1',s:'Мы вышли из музея до закрытия.',w:'музея',c:'gen',d:1,why:'из (чего?) музея',span:[12,17],fam:'prep-government',pd:[]},
+{id:'g2',s:'У берега стояла старая лодка.',w:'берега',c:'gen',d:1,why:'у (чего?) берега',span:[2,8],fam:'prep-government',pd:['nom']},
+{id:'g3',s:'Для проекта не хватало времени.',w:'проекта',c:'gen',d:1,why:'для (чего?) проекта',span:[4,11],fam:'prep-government',pd:[]},
+{id:'g4',s:'С крыши медленно стекала вода.',w:'крыши',c:'gen',d:1,why:'с (чего?) крыши',span:[2,7],fam:'prep-government',pd:['nom']},
+{id:'d1',s:'Мы подошли к площади перед концертом.',w:'площади',c:'dat',d:2,why:'подошли к (чему?) площади',span:[13,20],fam:'station-form',pd:['gen','prep']},
+{id:'d2',s:'Тренер объяснил команде новый план.',w:'команде',c:'dat',d:1,why:'объяснил (кому?) команде',span:[16,23],fam:'verb-government',pd:['prep']},
+{id:'d3',s:'По аллее быстро проехал велосипедист.',w:'аллее',c:'dat',d:2,why:'по (чему?) аллее',span:[3,8],fam:'prep-po',pd:['prep']},
+{id:'d4',s:'Я отправил другу фотографию.',w:'другу',c:'dat',d:1,why:'отправил (кому?) другу',span:[11,16],fam:'verb-government',pd:[]},
+{id:'a1',s:'Вчера я встретил брата у станции.',w:'брата',c:'acc',d:2,why:'встретил (кого?) брата',span:[17,22],fam:'animate-gen-acc',pd:['gen']},
+{id:'a2',s:'Мы заметили корабль в тумане.',w:'корабль',c:'acc',d:1,why:'заметили (что?) корабль',span:[12,19],fam:'nom-acc-form',pd:['nom']},
+{id:'a3',s:'Редактор проверил рукопись перед печатью.',w:'рукопись',c:'acc',d:2,why:'проверил (что?) рукопись',span:[18,26],fam:'nom-acc-form',pd:['nom']},
+{id:'a4',s:'Я положил ключ на полку.',w:'ключ',c:'acc',d:1,why:'положил (что?) ключ',span:[10,14],fam:'nom-acc-form',pd:['nom']},
+{id:'i1',s:'Мы гордимся победой нашей команды.',w:'победой',c:'ins',d:1,why:'гордимся (чем?) победой',span:[12,19],fam:'verb-government',pd:[]},
+{id:'i2',s:'Художник работал тонкой кистью.',w:'кистью',c:'ins',d:1,why:'работал (чем?) кистью',span:[24,30],fam:'instrument-role',pd:[]},
+{id:'i3',s:'Перед домом остановилось такси.',w:'домом',c:'ins',d:1,why:'перед (чем?) домом',span:[6,11],fam:'prep-government',pd:[]},
+{id:'i4',s:'Путешественник любовался морем с палубы.',w:'морем',c:'ins',d:2,why:'любовался (чем?) морем',span:[25,30],fam:'verb-government',pd:[]},
+{id:'p1',s:'Мы долго говорили о спектакле.',w:'спектакле',c:'prep',d:1,why:'говорили о (чём?) спектакле',span:[20,29],fam:'prep-government',pd:[]},
+{id:'p2',s:'В журнале напечатали интервью с учёным.',w:'журнале',c:'prep',d:1,why:'в (чём?) журнале',span:[2,9],fam:'location-prep',pd:[]},
+{id:'p3',s:'Экспедиция остановилась на острове.',w:'острове',c:'prep',d:1,why:'остановилась на (чём?) острове',span:[27,34],fam:'location-prep',pd:[]},
+{id:'p4',s:'Мы вспоминали о путешествии весь вечер.',w:'путешествии',c:'prep',d:1,why:'вспоминали о (чём?) путешествии',span:[16,27],fam:'prep-government',pd:[]},
+{id:'x1',s:'После матча мы поздравили капитана.',w:'капитана',c:'acc',d:2,why:'поздравили (кого?) капитана',span:[26,34],fam:'captain-gen-acc',pd:['gen']},
+{id:'x2',s:'Около капитана собрались игроки.',w:'капитана',c:'gen',d:2,why:'около (кого?) капитана',span:[6,14],fam:'captain-gen-acc',pd:['acc']},
+{id:'x3',s:'Я доверяю мнению опытного мастера.',w:'мнению',c:'dat',d:2,why:'доверяю (чему?) мнению',span:[10,16],fam:'verb-government',pd:[]},
+{id:'x4',s:'Мы обсуждали мнение эксперта после встречи.',w:'мнение',c:'acc',d:2,why:'обсуждали (что?) мнение',span:[13,19],fam:'nom-acc-form',pd:['nom']},
+{id:'x5',s:'Сестра стала врачом после университета.',w:'врачом',c:'ins',d:2,why:'стала (кем?) врачом',span:[13,19],fam:'predicate-instrumental',pd:[]},
+{id:'x6',s:'Врач осмотрел пациента перед процедурой.',w:'Врач',c:'nom',d:2,why:'врач (кто?) осмотрел',span:[0,4],fam:'syntax-subject-object',pd:[]},
+{id:'x7',s:'Мы говорили с учителем после урока.',w:'учителем',c:'ins',d:2,why:'говорили с (кем?) учителем',span:[14,22],fam:'prep-s',pd:[]},
+{id:'x8',s:'В кабинете учителя лежали тетради.',w:'учителя',c:'gen',d:2,why:'кабинет (кого?) учителя; слово «учителя» зависит от слова «кабинет»',span:[11,18],fam:'dependent-genitive',pd:['acc']},
+{id:'x9',s:'К вечеру мы добрались до станции.',w:'станции',c:'gen',d:2,why:'добрались до (чего?) станции',span:[25,32],fam:'station-form',pd:['dat','prep']},
+{id:'x10',s:'Мы подошли к станции со стороны парка.',w:'станции',c:'dat',d:2,why:'подошли к (чему?) станции',span:[13,20],fam:'station-form',pd:['gen','prep']},
+{id:'x11',s:'На станции объявили прибытие поезда.',w:'станции',c:'prep',d:2,why:'на (чём?) станции',span:[3,10],fam:'station-form',pd:['gen','dat']},
+{id:'x12',s:'Я вижу мышь под столом.',w:'мышь',c:'acc',d:2,why:'вижу (кого? что?) мышь',span:[7,11],fam:'nom-acc-form',pd:['nom']},
+{id:'n5',s:'Маяк освещал вход в гавань.',w:'Маяк',c:'nom',d:2,why:'маяк (что?) освещал',span:[0,4],fam:'nom-acc-form',pd:['acc']},
+{id:'n6',s:'Снег укрыл пустую площадь.',w:'Снег',c:'nom',d:1,why:'снег (что?) укрыл',span:[0,4],fam:'nom-acc-form',pd:['acc']},
+{id:'n7',s:'Письмо лежало на столе.',w:'Письмо',c:'nom',d:2,why:'письмо (что?) лежало',span:[0,6],fam:'nom-acc-form',pd:['acc']},
+{id:'n8',s:'Фонарь освещал узкий переулок.',w:'Фонарь',c:'nom',d:1,why:'фонарь (что?) освещал',span:[0,6],fam:'nom-acc-form',pd:['acc']},
+{id:'g5',s:'Возле станции остановился автобус.',w:'станции',c:'gen',d:2,why:'возле (чего?) станции',span:[6,13],fam:'station-form',pd:['dat','prep']},
+{id:'g6',s:'У площади начался ремонт дороги.',w:'площади',c:'gen',d:2,why:'у (чего?) площади',span:[2,9],fam:'square-form',pd:['dat','prep']},
+{id:'d5',s:'Катер подошёл к пристани перед закатом.',w:'пристани',c:'dat',d:2,why:'подошёл к (чему?) пристани',span:[16,24],fam:'third-declension-form',pd:['gen','prep']},
+{id:'d6',s:'Учитель дал ученику дополнительное задание.',w:'ученику',c:'dat',d:1,why:'дал (кому?) ученику',span:[12,19],fam:'verb-government',pd:[]},
+{id:'d7',s:'По площади медленно двигалась колонна.',w:'площади',c:'dat',d:2,why:'по (чему?) площади',span:[3,10],fam:'square-form',pd:['gen','prep']},
+{id:'a5',s:'Мы увидели площадь за поворотом.',w:'площадь',c:'acc',d:2,why:'увидели (что?) площадь',span:[11,18],fam:'nom-acc-form',pd:['nom']},
+{id:'a6',s:'Экскурсовод встретил гостей у входа.',w:'гостей',c:'acc',d:2,why:'встретил (кого?) гостей',span:[21,27],fam:'animate-gen-acc',pd:['gen']},
+{id:'i5',s:'Пилот управлял самолётом в сложных условиях.',w:'самолётом',c:'ins',d:1,why:'управлял (чем?) самолётом',span:[15,24],fam:'verb-government',pd:[]},
+{id:'i6',s:'Перед площадью остановился туристический автобус.',w:'площадью',c:'ins',d:1,why:'перед (чем?) площадью',span:[6,14],fam:'prep-government',pd:[]},
+{id:'i7',s:'Команда осталась довольна результатом матча.',w:'результатом',c:'ins',d:2,why:'довольна (чем?) результатом',span:[26,37],fam:'adjective-government',pd:[]},
+{id:'p5',s:'Мы говорили о станции после экскурсии.',w:'станции',c:'prep',d:2,why:'говорили о (чём?) станции',span:[14,21],fam:'station-form',pd:['gen','dat']},
+{id:'p6',s:'В тетради осталось несколько пометок.',w:'тетради',c:'prep',d:2,why:'в (чём?) тетради',span:[2,9],fam:'third-declension-form',pd:['gen','dat']},
+{id:'p7',s:'На площади установили новую сцену.',w:'площади',c:'prep',d:2,why:'на (чём?) площади',span:[3,10],fam:'square-form',pd:['gen','dat']},
+{id:'p8',s:'О герое фильма спорили весь вечер.',w:'герое',c:'prep',d:1,why:'спорили о (ком?) герое',span:[2,7],fam:'prep-government',pd:[]}
+];
+
+const TOTAL_TASKS=23;
+const CASE_KEYS=Object.keys(CASES);
+const $=id=>document.getElementById(id); const qsa=s=>[...document.querySelectorAll(s)];
+const screens=['intro','stage1','stage2','stage3','boss','final'];
+let lastRunIds=new Set();
+let rng=()=>Math.random();
+
+const state={
+  stage:0,score:0,streak:0,maxStreak:0,energy:4,difficulty:1,phase:'awaitingInput',
+  attempts:0,resolvedTasks:0,firstTryCorrect:0,eventualCorrect:0,wrongAttempts:0,completed:0,
+  taskStats:{},results:[],usedThisRun:new Set(),rewards:[],moduleQuality:{},
+  runSeed:0,explicitSeed:false,reservedBoss:{hard:[],support:[]},
+  s1:[],s1i:0,s1CasePlan:[],currentS1:null,
+  s2:[],s2i:0,s2CasePlan:[],s2TruthPattern:[],currentS2:null,s2AwaitingCorrection:false,
+  s3packs:[],s3i:0,s3CaseGroups:[],selectedSort:null,
+  boss:[],bossi:0,bossCorrect:0,bossMistakes:0
+};
+
+function seedRng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296}}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function mark(t){const [a,b]=t.span||[];if(!Number.isInteger(a)||!Number.isInteger(b)||t.s.slice(a,b)!==t.w)return esc(t.s);return esc(t.s.slice(0,a))+'<span class="target">'+esc(t.s.slice(a,b))+'</span>'+esc(t.s.slice(b))}
+function setScreen(id){screens.forEach(s=>$(s).classList.toggle('active',s===id));window.scrollTo({top:0,behavior:'smooth'})}
+function energyMultiplier(){return [0.75,0.85,1.0,1.1,1.2][state.energy]||0.75}
+function updateHud(){
+  $('score').textContent=state.score;$('streak').textContent=state.streak;
+  $('energy').textContent='◆'.repeat(state.energy)+'◇'.repeat(4-state.energy);
+  $('energyMult').textContent='×'+energyMultiplier().toFixed(2);
+  $('stageLabel').textContent=(Math.min(state.stage,4)||1)+'/4';
+  $('progressBar').style.width=Math.min(100,(state.resolvedTasks/TOTAL_TASKS)*100)+'%';
+}
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1200)}
+function setPhase(p){state.phase=p}
+function disableButtons(container,disabled=true){if(!container)return;container.querySelectorAll('button').forEach(b=>b.disabled=disabled)}
+function taskRec(task){return state.taskStats[task.id]||(state.taskStats[task.id]={attempts:0,wrong:0,resolved:false})}
+function recordAttempt(task,ok,mode){
+  if(state.phase!=='resolving')return false;
+  const rec=taskRec(task);rec.attempts++;state.attempts++;
+  if(!ok){rec.wrong++;state.wrongAttempts++;state.energy=Math.max(0,state.energy-1);state.streak=0;state.difficulty=1}
+  state.results.push({id:task.id,case:task.c,ok,mode,difficulty:task.d,attemptNo:rec.attempts});updateHud();return true;
+}
+function resolveTask(task,correct,mode,points){
+  const rec=taskRec(task);if(rec.resolved)return false;rec.resolved=true;state.resolvedTasks++;state.completed=state.resolvedTasks;
+  const firstTry=correct&&rec.wrong===0;
+  if(correct){state.eventualCorrect++;if(firstTry){state.firstTryCorrect++;state.streak++;state.maxStreak=Math.max(state.maxStreak,state.streak);if(state.streak>=3)state.difficulty=2}else state.streak=0;
+    const retryFactor=firstTry?1:.55;const streakBonus=firstTry?Math.min(60,(state.streak-1)*10):0;state.score+=Math.round((points*retryFactor+streakBonus)*energyMultiplier());
+    if(firstTry&&state.streak>0&&state.streak%4===0&&state.energy<4){state.energy++;toast('Сигнал восстановлен +1 ◆')}
+  }else{state.streak=0;state.difficulty=1}
+  updateHud();return true;
+}
+function feedback(el,ok,task,extra=''){el.className='feedback show '+(ok?'good':'bad');el.innerHTML=ok?'✓ Контекст считан точно. '+extra:'⚠ Сигнал искажён. '+extra+(extra?' ':'')+'Опора: <strong>'+esc(task.why)+'</strong>';const card=el.closest('.missioncard');card.classList.remove('pulse-good','shake');void card.offsetWidth;card.classList.add(ok?'pulse-good':'shake')}
+function caseButtons(container,handler,{questions=true}={}){container.innerHTML='';Object.entries(CASES).forEach(([k,v])=>{const b=document.createElement('button');b.className='casebtn';b.dataset.case=k;b.innerHTML='<b>'+v.short+' · '+v.name+'</b>'+(questions?'<small>'+v.q+'</small>':'');b.addEventListener('click',()=>handler(k,b));container.appendChild(b)})}
+function bossButtons(container,handler){container.innerHTML='';Object.entries(CASES).forEach(([k,v])=>{const b=document.createElement('button');b.className='bosscase';b.dataset.case=k;b.innerHTML='<b>'+v.short+'</b><small>'+v.name+'</small>';b.addEventListener('click',()=>handler(k,b));container.appendChild(b)})}
+function showUnlock(icon,title,text,next){$('unlockIcon').textContent=icon;$('unlockTitle').textContent=title;$('unlockText').textContent=text;$('overlay').classList.add('show');$('unlockBtn').onclick=()=>{$('overlay').classList.remove('show');next()}}
+function unlastSorted(pool){if(state.explicitSeed)return shuffle(pool);const a=shuffle(pool.filter(t=>!lastRunIds.has(t.id))),b=shuffle(pool.filter(t=>lastRunIds.has(t.id)));return [...a,...b]}
+function excludedIds(extra=new Set()){const s=new Set([...state.usedThisRun,...extra,...state.reservedBoss.hard.map(t=>t.id),...state.reservedBoss.support.map(t=>t.id)]);return s}
+function chooseOne({caseKey=null,difficulty=state.difficulty,exclude=new Set(),predicate=null}={}){
+  const ex=excludedIds(exclude);let pool=BANK.filter(t=>!ex.has(t.id)&&(caseKey? t.c===caseKey:true)&&(!predicate||predicate(t)));
+  const desired=difficulty===2?2:1;
+  let primary=pool.filter(t=>t.d===desired), secondary=pool.filter(t=>t.d!==desired);
+  if(state.explicitSeed){pool=[...shuffle(primary),...shuffle(secondary)]}
+  else{const freshPrimary=shuffle(primary.filter(t=>!lastRunIds.has(t.id))),freshSecondary=shuffle(secondary.filter(t=>!lastRunIds.has(t.id))),oldPrimary=shuffle(primary.filter(t=>lastRunIds.has(t.id))),oldSecondary=shuffle(secondary.filter(t=>lastRunIds.has(t.id)));pool=[...freshPrimary,...freshSecondary,...oldPrimary,...oldSecondary]}
+  const t=pool[0];if(!t)throw new Error('No task available for '+(caseKey||'any'));state.usedThisRun.add(t.id);return t;
+}
+function reserveBoss(){
+  const hardCounts=Object.fromEntries(CASE_KEYS.map(c=>[c,BANK.filter(t=>t.c===c&&t.d===2).length]));
+  const abundant=new Set(CASE_KEYS.filter(c=>hardCounts[c]>=2));
+  const hard=unlastSorted(BANK.filter(t=>t.d===2));const picked=[];const cases=new Set();
+  for(const t of hard){if(abundant.has(t.c)&&!cases.has(t.c)){picked.push(t);cases.add(t.c)}if(picked.length===4)break}
+  for(const t of hard){if(picked.length===4)break;if(!cases.has(t.c)){picked.push(t);cases.add(t.c)}}
+  for(const t of hard){if(picked.length===4)break;if(!picked.some(x=>x.id===t.id))picked.push(t)}
+  const ex=new Set(picked.map(t=>t.id));const roomy=new Set(CASE_KEYS.filter(c=>BANK.filter(t=>t.c===c).length>=6));const support=unlastSorted(BANK.filter(t=>t.d===1&&!ex.has(t.id)&&roomy.has(t.c))).slice(0,1);
+  state.reservedBoss={hard:picked,support};
+}
+function controlledTruthPattern(){
+  const trues=rng()<.5?2:3;const base=[...Array(trues).fill(true),...Array(5-trues).fill(false)];
+  for(let i=0;i<20;i++){const p=shuffle(base);const alternating=p.every((v,idx)=>idx===0||v!==p[idx-1]);if(!alternating)return p}
+  return [true,true,false,true,false].slice(0,5);
+}
+function hasPlausibleDistractor(task){return Array.isArray(task.pd)&&task.pd.some(c=>CASES[c]&&c!==task.c)}
+function scannerFalseClaimCases(){
+  return new Set(BANK.flatMap(t=>hasPlausibleDistractor(t)?t.pd.filter(c=>CASES[c]&&c!==t.c):[]));
+}
+function scannerTrueClaimCases(){
+  const falseCases=scannerFalseClaimCases();
+  return CASE_KEYS.filter(c=>falseCases.has(c)&&BANK.some(t=>t.c===c));
+}
+function plausibleWrongCase(task){const arr=(task.pd||[]).filter(c=>CASES[c]&&c!==task.c);if(!arr.length)throw new Error('Stage 2 false claim without plausible distractor: '+task.id);return shuffle(arr)[0]}
+function moduleTier(stageModes){const rs=state.results.filter(r=>stageModes.includes(r.mode));const wrong=rs.filter(r=>!r.ok).length;if(wrong===0&&state.energy>=3)return 3;if(wrong<=2)return 2;return 1}
+function applyShardQuality(ids,tier){ids.forEach(id=>{const el=$(id);if(el){el.classList.add('on','q'+tier);el.classList.remove('q1','q2','q3');el.classList.add('q'+tier)}})}
+function tierText(t){return t===3?'усилен':t===2?'стабилен':'восстановлен с помехами'}
+function paintModuleShards(screenId){const tiers=[state.moduleQuality.route,state.moduleQuality.scanner,state.moduleQuality.sort];qsa(`#${screenId} .rewards .shard`).forEach((el,i)=>{el.classList.remove('on','q1','q2','q3');const tier=tiers[i];if(tier)el.classList.add('on','q'+tier)})}
+
+function resetState(seed){
+  const explicit=Number.isInteger(seed);const nextSeed=explicit?seed>>>0:(Date.now()>>>0);rng=seedRng(nextSeed);
+  Object.assign(state,{stage:0,score:0,streak:0,maxStreak:0,energy:4,difficulty:1,phase:'awaitingInput',attempts:0,resolvedTasks:0,firstTryCorrect:0,eventualCorrect:0,wrongAttempts:0,completed:0,taskStats:{},results:[],usedThisRun:new Set(),rewards:[],moduleQuality:{},runSeed:nextSeed,explicitSeed:explicit,reservedBoss:{hard:[],support:[]},s1:[],s1i:0,s1CasePlan:[],currentS1:null,s2:[],s2i:0,s2CasePlan:[],s2TruthPattern:[],currentS2:null,s2AwaitingCorrection:false,s3packs:[],s3i:0,s3CaseGroups:[],selectedSort:null,boss:[],bossi:0,bossCorrect:0,bossMistakes:0});
+  qsa('.shard').forEach(x=>{x.classList.remove('on','q1','q2','q3')});qsa('.bossnode').forEach(x=>x.classList.remove('done','exact','damaged'));reserveBoss();updateHud();
+}
+function start(seed){resetState(seed);$('hud').hidden=false;state.stage=1;state.s1CasePlan=shuffle(CASE_KEYS);state.s1i=0;renderS1();setScreen('stage1');updateHud()}
+
+function renderS1(){
+  setPhase('awaitingInput');if(!state.currentS1){state.currentS1=chooseOne({caseKey:state.s1CasePlan[state.s1i],difficulty:state.difficulty});state.s1.push(state.currentS1)}const t=state.currentS1;
+  $('s1Count').textContent=`Сигнал ${state.s1i+1}/6`;$('s1Sentence').innerHTML=mark(t);$('s1Feedback').className='feedback';$('s1Feedback').innerHTML='';$('s1Next').classList.remove('show');
+  $('s1Intel').innerHTML=state.difficulty===2?'Следующий сигнал выбран из <strong>контекстных ловушек</strong>: ориентируйся на связь слов, а не на форму.':'Смотри не только на окончание. Найди слово, от которого зависит существительное, и задай вопрос.';
+  caseButtons($('s1Cases'),(c,b)=>{if(state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('s1Cases'),true);const ok=c===t.c;recordAttempt(t,ok,'route');resolveTask(t,ok,'route',100);b.classList.add(ok?'good':'bad');if(!ok)$('s1Cases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('s1Feedback'),ok,t,ok?`Верно: ${CASES[t.c].short}`:'');$('s1Next').classList.add('show');setPhase('feedback')})
+}
+$('s1Next').onclick=()=>{state.s1i++;state.currentS1=null;if(state.s1i<6)renderS1();else{const tier=moduleTier(['route']);state.moduleQuality.route=tier;applyShardQuality(['r1'],tier);showUnlock('◈','Маршрут '+tierText(tier),'Первый контур пройден. Качество модуля зависит от точности и сохранённого сигнала.',()=>{state.stage=2;paintModuleShards('stage2');prepareS2();setScreen('stage2');updateHud()})}};
+
+function prepareS2(){
+  state.s2TruthPattern=controlledTruthPattern();
+  const falseTaskCases=CASE_KEYS.filter(c=>BANK.some(t=>t.c===c&&hasPlausibleDistractor(t)));
+  const trueClaimCases=scannerTrueClaimCases();
+  if(!trueClaimCases.length)throw new Error('Stage 2 has no unbiased TRUE claim cases');
+  const usedCases=new Set();
+  state.s2CasePlan=state.s2TruthPattern.map(isTrue=>{
+    const source=isTrue?trueClaimCases:falseTaskCases;
+    let pool=source.filter(c=>!usedCases.has(c));if(!pool.length)pool=[...source];
+    const c=shuffle(pool)[0];usedCases.add(c);return c;
+  });
+  state.s2i=0;state.currentS2=null;renderS2();
+}
+function renderS2(){
+  setPhase('awaitingInput');state.s2AwaitingCorrection=false;if(!state.currentS2){const isTrue=state.s2TruthPattern[state.s2i];const base=chooseOne({caseKey:state.s2CasePlan[state.s2i],difficulty:state.difficulty,predicate:isTrue?null:hasPlausibleDistractor});state.currentS2={...base,claimCase:isTrue?base.c:plausibleWrongCase(base)};state.s2.push(state.currentS2)}const t=state.currentS2;
+  $('s2Count').textContent=`Проверка ${state.s2i+1}/5`;$('s2Sentence').innerHTML=mark(t);$('s2Claim').innerHTML=`Система утверждает: <strong>${esc(t.w)}</strong> — <strong>${CASES[t.claimCase].name} падеж</strong>.`;$('correction').classList.remove('show');$('s2Feedback').className='feedback';$('s2Feedback').innerHTML='';$('s2Next').classList.remove('show');
+  qsa('#binaryRow .binary').forEach(b=>{b.disabled=false;b.classList.remove('good','bad')});caseButtons($('s2Cases'),(c,b)=>resolveS2Correction(c,b));
+  $('s2Intel').innerHTML=state.difficulty===2?'Сканер использует более коварные совпадения форм. Проверяй управление и роль слова в предложении.':'Проверяй связь слов. Ошибочные метки строятся только из правдоподобных смешений, а не случайных падежей.';
+}
+function resolveS2Correction(c,b){const t=state.currentS2;if(!state.s2AwaitingCorrection||state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('s2Cases'),true);const ok=c===t.c;recordAttempt(t,ok,'scanner-correct');resolveTask(t,ok,'scanner-correct',110);b.classList.add(ok?'good':'bad');if(!ok)$('s2Cases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('s2Feedback'),ok,t,ok?'Исправление принято.':'');$('s2Next').classList.add('show');setPhase('feedback')}
+qsa('#binaryRow .binary').forEach(btn=>btn.addEventListener('click',()=>{
+  if(state.phase!=='awaitingInput')return;const t=state.currentS2;setPhase('resolving');disableButtons($('binaryRow'),true);const saysCorrect=t.claimCase===t.c;const verdict=btn.dataset.verdict==='true';const ok=verdict===saysCorrect;recordAttempt(t,ok,'scanner-verdict');
+  if(ok&&!verdict){btn.classList.add('good');state.s2AwaitingCorrection=true;$('correction').classList.add('show');$('s2Feedback').className='feedback show good';$('s2Feedback').innerHTML='✓ Сбой найден. Теперь восстанови правильный падеж.';setTimeout(()=>{setPhase('awaitingInput');disableButtons($('s2Cases'),false)},220)}
+  else{resolveTask(t,ok,'scanner-verdict',110);btn.classList.add(ok?'good':'bad');if(!ok){const right=qsa('#binaryRow .binary').find(b=>(b.dataset.verdict==='true')===saysCorrect);if(right)right.classList.add('good')}feedback($('s2Feedback'),ok,t,ok?'Разметка действительно верна.':'');$('s2Next').classList.add('show');setPhase('feedback')}
+}));
+$('s2Next').onclick=()=>{state.s2i++;state.currentS2=null;if(state.s2i<5)renderS2();else{const tier=moduleTier(['scanner-verdict','scanner-correct']);state.moduleQuality.scanner=tier;applyShardQuality(['r2b'],tier);showUnlock('⌬','Сканер '+tierText(tier),'Модуль пройден. Его состояние отражает качество проверки, а не просто факт прохождения.',()=>{state.stage=3;paintModuleShards('stage3');prepareS3();setScreen('stage3');updateHud()})}};
+
+function prepareS3(){const cases=shuffle(CASE_KEYS);state.s3CaseGroups=[cases.slice(0,3),cases.slice(3,6)];state.s3packs=[];state.s3i=0;buildS3Pack(0);renderS3()}
+function buildS3Pack(index){const cs=state.s3CaseGroups[index];const tasks=[];for(const c of cs)tasks.push(chooseOne({caseKey:c,difficulty:state.difficulty}));const extraCase=shuffle(cs)[0];tasks.push(chooseOne({caseKey:extraCase,difficulty:state.difficulty}));state.s3packs[index]={cases:cs,tasks:shuffle(tasks)};return state.s3packs[index]}
+function renderS3(){
+  setPhase('awaitingInput');state.selectedSort=null;const pack=state.s3packs[state.s3i];$('s3Count').textContent=`Пакет ${state.s3i+1}/2`;$('sortCards').innerHTML='';$('sortDocks').innerHTML='';$('s3Feedback').className='feedback show';$('s3Feedback').textContent='Выбери карточку, затем сектор падежа.';$('s3Next').classList.remove('show');
+  const zone=$('sortCards').closest('.sortzone');zone.classList.remove('has-selection');
+  pack.tasks.forEach(t=>{const d=document.createElement('div');d.className='sortcard';d.dataset.id=t.id;d.innerHTML=mark(t);d.onclick=()=>{if(state.phase!=='awaitingInput'||d.classList.contains('done'))return;qsa('#sortCards .sortcard').forEach(x=>x.classList.remove('selected'));d.classList.add('selected');state.selectedSort=t.id;zone.classList.add('has-selection');$('s3Feedback').className='feedback show';$('s3Feedback').textContent='Карточка захвачена. Выбери сектор падежа.'};$('sortCards').appendChild(d)});
+  pack.cases.forEach(c=>{const b=document.createElement('button');b.className='dock';b.dataset.case=c;b.innerHTML=`<b>${CASES[c].short} · ${CASES[c].name}</b><span>${CASES[c].q}</span>`;b.onclick=()=>sortTo(c,b);$('sortDocks').appendChild(b)});
+  $('adaptiveIntel').innerHTML=state.difficulty===2?'Этот пакет собран на уровне 2: больше <strong>контекстных и формальных смешений</strong>.':'Этот пакет собран на базовом уровне. Следующий пакет изменится, если появится серия из трёх безошибочных решений.';
+}
+function sortTo(c,dock){
+  if(state.phase!=='awaitingInput')return;if(!state.selectedSort){toast('Сначала выбери карточку');return}const pack=state.s3packs[state.s3i],t=pack.tasks.find(x=>x.id===state.selectedSort),card=$('sortCards').querySelector(`[data-id="${t.id}"]`);if(!card||card.classList.contains('done'))return;
+  setPhase('resolving');disableButtons($('sortDocks'),true);const ok=c===t.c;recordAttempt(t,ok,'sort');dock.classList.remove('good','bad','flash');void dock.offsetWidth;dock.classList.add(ok?'good':'bad','flash');
+  if(ok){resolveTask(t,true,'sort',120);card.classList.add('done');card.classList.remove('selected');state.selectedSort=null;$('s3Feedback').className='feedback show good';$('s3Feedback').innerHTML='✓ Карточка распределена верно.'}
+  else{$('s3Feedback').className='feedback show bad';$('s3Feedback').innerHTML='⚠ Не этот сектор. Опора: <strong>'+esc(t.why)+'</strong>. Попробуй ещё раз.';card.classList.add('selected')}
+  const done=pack.tasks.every(x=>taskRec(x).resolved);if(done)$('s3Next').classList.add('show');
+  setTimeout(()=>{if(!ok){setPhase('awaitingInput');disableButtons($('sortDocks'),false)}else if(done){setPhase('feedback')}else{setPhase('awaitingInput');disableButtons($('sortDocks'),false);$('sortCards').closest('.sortzone').classList.remove('has-selection')}},280);
+}
+$('s3Next').onclick=()=>{if(state.s3i===0){state.s3i=1;buildS3Pack(1);renderS3()}else{const tier=moduleTier(['sort']);state.moduleQuality.sort=tier;applyShardQuality(['r3c'],tier);showUnlock('✦','Контур '+tierText(tier),'Три модуля собраны. Blackout теперь проверит навык без вопросных подсказок.',()=>{state.stage=4;prepareBoss();setScreen('boss');updateHud()})}};
+
+function prepareBoss(){
+  const hard=[...state.reservedBoss.hard];let chosen;
+  if(state.difficulty===2)chosen=hard.slice(0,4);else chosen=shuffle([...hard.slice(0,3),...state.reservedBoss.support]).slice(0,4);
+  if(chosen.length!==4||new Set(chosen.map(t=>t.id)).size!==4||chosen.some(t=>state.usedThisRun.has(t.id)))throw new Error('Boss reserve invalid');
+  state.boss=shuffle(chosen);state.boss.forEach(t=>state.usedThisRun.add(t.id));state.bossi=0;state.bossCorrect=0;state.bossMistakes=0;paintModuleShards('boss');renderBoss();
+}
+function renderBoss(){
+  setPhase('awaitingInput');const t=state.boss[state.bossi];$('bossCount').textContent=`Сигнал ${state.bossi+1}/4`;$('bossSentence').innerHTML=mark(t);$('bossFeedback').className='feedback';$('bossFeedback').innerHTML='';$('bossNext').classList.remove('show');
+  bossButtons($('bossCases'),(c,b)=>{if(state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('bossCases'),true);const ok=c===t.c;recordAttempt(t,ok,'boss');resolveTask(t,ok,'boss',190);if(ok)state.bossCorrect++;else state.bossMistakes++;b.classList.add(ok?'good':'bad');if(!ok)$('bossCases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('bossFeedback'),ok,t,ok?'Финальный сигнал принят.':'');const node=qsa('.bossnode')[state.bossi];node.classList.add('done',ok?'exact':'damaged');if(!ok){const card=$('missionBoss');card.classList.remove('boss-hit');void card.offsetWidth;card.classList.add('boss-hit')}$('bossNext').classList.add('show');setPhase('feedback')})
+}
+$('bossNext').onclick=()=>{state.bossi++;if(state.bossi<4)renderBoss();else finish()};
+function finish(){
+  state.stage=4;lastRunIds=new Set(state.usedThisRun);updateHud();$('fScore').textContent=state.score;$('fCorrect').textContent=`${state.firstTryCorrect}/${state.resolvedTasks}`;$('fResolved').textContent=`${state.eventualCorrect}/${state.resolvedTasks}`;$('fErrors').textContent=state.wrongAttempts;$('fStreak').textContent=state.maxStreak;$('fEnergy').textContent=`${state.energy}/4 · ×${energyMultiplier().toFixed(2)}`;$('fBoss').textContent=`${state.bossCorrect}/4`;
+  const moduleSum=Object.values(state.moduleQuality).reduce((a,b)=>a+b,0);let note,title,sub;
+  if(state.bossCorrect===4&&state.energy>=2&&state.firstTryCorrect>=17){title='Контур восстановлен';sub='Blackout пройден без потери финальных узлов.';note='Сильный результат без подсказок: большинство задач решено без исправлений, а финальный контур удержан.'}
+  else if(state.bossCorrect>=3&&state.energy>=1){title='Маршрут восстановлен';sub='Контур держит курс, но часть сигнала потеряна.';note='Навык работает; проверь ещё контексты из тех семейств, где появились ошибочные попытки.'}
+  else{title='Связь восстановлена';sub='Миссия завершена, но Blackout оставил повреждённые узлы.';note='Повтори маршрут: в следующем запуске порядок и набор максимально изменятся, а система снова начнёт с базового уровня.'}
+  if(state.energy===0)sub+=' Нулевой сигнал снизил итоговый множитель и качество восстановления.';
+  if(moduleSum<=4)note+=' Часть модулей восстановлена с помехами — их качество зависело от хода игры.';
+  $('finalTitle').textContent=title;$('finalSub').textContent=sub;$('skillNote').textContent=note+` Попыток: ${state.attempts}. Seed: ${state.runSeed}.`;setScreen('final');$('progressBar').style.width='100%';
+}
+
+$('startBtn').onclick=()=>start();$('restartBtn').onclick=()=>start();
+function validate(){
+  const errors=[];const ids=new Set();const counts=Object.fromEntries(CASE_KEYS.map(c=>[c,0]));let hard=0;
+  for(const t of BANK){
+    if(!t.id||!t.s||!t.w||!CASES[t.c]||!t.why||!t.fam)errors.push('fields:'+String(t.id));
+    if(ids.has(t.id))errors.push('duplicate-id:'+t.id);ids.add(t.id);
+    if(![1,2].includes(t.d))errors.push('difficulty:'+t.id);if(t.d===2)hard++;
+    if(!Array.isArray(t.span)||t.span.length!==2||t.s.slice(t.span[0],t.span[1])!==t.w)errors.push('target-range:'+t.id);
+    if(!Array.isArray(t.pd)||t.pd.some(c=>!CASES[c]||c===t.c)||new Set(t.pd).size!==t.pd.length)errors.push('plausible-distractors:'+t.id);
+    counts[t.c]=(counts[t.c]||0)+1;
+  }
+  for(const c of CASE_KEYS)if(counts[c]<8)errors.push('case-min:'+c+':'+counts[c]);
+  if(hard<18)errors.push('hard-min:'+hard);if(BANK.length<48)errors.push('bank-capacity:'+BANK.length);
+  const hardCases=new Set(BANK.filter(t=>t.d===2).map(t=>t.c));if(hardCases.size<6)errors.push('boss-hard-case-coverage:'+hardCases.size);
+  const scanner=BANK.filter(hasPlausibleDistractor),scannerCases=new Set(scanner.map(t=>t.c));
+  if(scanner.length<16)errors.push('scanner-pd-capacity:'+scanner.length);if(scannerCases.size<5)errors.push('scanner-case-coverage:'+scannerCases.size);
+  for(const level of [1,2])if(scanner.filter(t=>t.d===level).length<5)errors.push('scanner-difficulty-'+level+':'+scanner.filter(t=>t.d===level).length);
+  const falseClaimCases=scannerFalseClaimCases();
+  const trueClaimCaseSet=new Set(scannerTrueClaimCases());
+  for(const c of trueClaimCaseSet)if(!falseClaimCases.has(c))errors.push('scanner-claim-bias:'+c);
+  if(!trueClaimCaseSet.size)errors.push('scanner-true-claim-capacity:0');
+  return {ok:errors.length===0,errors,count:BANK.length,hard,cases:counts,scannerEligible:scanner.length,scannerCases:[...scannerCases],scannerFalseClaimCases:[...falseClaimCases],scannerTrueClaimCases:[...trueClaimCaseSet],totalTasks:TOTAL_TASKS};
+}
+window.__GAME__={BANK,CASES,state,start,finish,resetState,validate,setSeed:(seed)=>start(seed),getLastRunIds:()=>[...lastRunIds],getRunIds:()=>[...state.usedThisRun],hasPlausibleDistractor,controlledTruthPattern,scannerFalseClaimCases:()=>[...scannerFalseClaimCases()],scannerTrueClaimCases};
+$('hud').hidden=true;updateHud();
+})();
+</script>
+</body></html>
