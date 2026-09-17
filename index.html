@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Орбита падежей — мини-игра v2.1</title>
+<title>Орбита падежей — мини-игра v2.5</title>
 <style>
 :root{
   --bg:#070b18; --panel:#11182a; --panel2:#18223a; --text:#f4f7ff; --muted:#9fb0cf;
@@ -72,6 +72,26 @@ button:disabled:hover{transform:none!important;background:inherit;border-color:r
   .bosscases{grid-template-columns:1fr 1fr}
 }
 
+
+/* v2.5 teacher report post-release patch */
+.identity{margin:24px 0 18px;padding:16px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);max-width:660px}
+.identity-title{font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#dce7ff;margin-bottom:12px}
+.identity-grid{display:grid;grid-template-columns:1.25fr .75fr .7fr;gap:10px}
+.field{display:grid;gap:6px;text-align:left}.field label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
+.field input{width:100%;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:rgba(6,10,20,.7);color:var(--text);padding:12px 13px;font:inherit;outline:none;transition:.18s border-color,.18s box-shadow}
+.field input:focus{border-color:rgba(103,232,249,.7);box-shadow:0 0 0 3px rgba(103,232,249,.09)}
+.field input.invalid{border-color:rgba(255,107,138,.75);box-shadow:0 0 0 3px rgba(255,107,138,.08)}
+.field-error{min-height:16px;font-size:11px;color:#ff9eb2;line-height:1.3}
+.final-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:22px}
+.teacher-report{max-width:760px;margin:26px auto 0;text-align:left;border:1px solid rgba(255,255,255,.09);border-radius:20px;background:rgba(7,11,24,.48);overflow:hidden}
+.teacher-report summary{cursor:pointer;list-style:none;padding:16px 18px;font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#dbe9ff;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.teacher-report summary::-webkit-details-marker{display:none}.teacher-report summary:after{content:'＋';color:var(--accent);font-size:18px}.teacher-report[open] summary:after{content:'−'}
+.report-body{border-top:1px solid rgba(255,255,255,.07);padding:18px}.report-head{display:grid;gap:4px;margin-bottom:16px}.report-head strong{font-size:18px}.report-head span{color:var(--muted);font-size:13px}
+.report-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:18px}.report-metric{padding:11px;border-radius:13px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}.report-metric b{display:block;font-size:18px}.report-metric small{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+.report-section{margin-top:16px}.report-section h4{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 0 8px}.report-list{margin:0;padding-left:18px;color:#dce6f8;line-height:1.55;font-size:13px}.report-empty{color:var(--muted);font-size:13px;margin:0}
+.report-copy-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px}.copy-status{font-size:12px;color:var(--good);min-height:16px}
+@media(max-width:620px){.identity-grid{grid-template-columns:1fr 1fr}.field:first-child{grid-column:1/-1}.report-metrics{grid-template-columns:1fr 1fr}}
+
 </style>
 </head>
 <body>
@@ -93,6 +113,14 @@ button:disabled:hover{transform:none!important;background:inherit;border-color:r
         <div class="eyebrow">Миссия 06 / Падежный контур</div>
         <h1>Восстанови<br>навигацию.</h1>
         <p>Система потеряла связи между словами. Чтобы вернуть маршрут, определяй падеж существительного <b>по смыслу, вопросу и управлению</b> — окончания могут маскировать ответ.</p>
+        <div class="identity" id="identityBlock">
+          <div class="identity-title">Кто выполняет миссию?</div>
+          <div class="identity-grid">
+            <div class="field"><label for="playerFirstName">Имя</label><input id="playerFirstName" type="text" maxlength="32" autocomplete="given-name" placeholder="Дима" /><div class="field-error" id="playerFirstNameError" aria-live="polite"></div></div>
+            <div class="field"><label for="playerLastInitial">Первая буква фамилии</label><input id="playerLastInitial" type="text" maxlength="1" autocomplete="off" placeholder="П" /><div class="field-error" id="playerLastInitialError" aria-live="polite"></div></div>
+            <div class="field"><label for="playerClassName">Класс</label><input id="playerClassName" type="text" maxlength="4" autocomplete="off" placeholder="6А" /><div class="field-error" id="playerClassNameError" aria-live="polite"></div></div>
+          </div>
+        </div>
         <button class="cta" id="startBtn">Запустить миссию →</button>
       </div>
       <div class="reactor" aria-hidden="true"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div><div class="core"><span>⌁</span></div></div>
@@ -134,14 +162,17 @@ button:disabled:hover{transform:none!important;background:inherit;border-color:r
 
   <section class="screen" id="final"><div class="finalwrap"><div class="finalsig">◉</div><div class="eyebrow">Миссия завершена</div><h1 id="finalTitle">Навигация восстановлена</h1><p id="finalSub">Контур снова держит курс.</p><div class="stats">
     <div class="stat"><strong id="fScore">0</strong><span>баллы</span></div><div class="stat"><strong id="fCorrect">0/0</strong><span>с первой попытки</span></div><div class="stat"><strong id="fResolved">0/0</strong><span>решено верно</span></div><div class="stat"><strong id="fErrors">0</strong><span>ошибочных попыток</span></div><div class="stat"><strong id="fStreak">0</strong><span>макс. серия</span></div><div class="stat"><strong id="fEnergy">0</strong><span>сигнал</span></div><div class="stat"><strong id="fBoss">0/4</strong><span>Blackout</span></div>
-  </div><div class="skillnote" id="skillNote"></div><button class="cta" id="restartBtn">Играть снова ↻</button></div></section>
+  </div><div class="skillnote" id="skillNote"></div>
+    <div class="final-actions"><button class="cta" id="restartBtn">Играть снова ↻</button><button class="ghost" id="changePlayerBtn">Сменить ученика</button></div>
+    <details class="teacher-report" id="teacherReport"><summary>Отчёт для учителя</summary><div class="report-body" id="teacherReportBody"></div></details>
+  </div></section>
 
   <div class="overlay" id="overlay"><div class="unlock"><span class="big" id="unlockIcon">◈</span><div class="eyebrow">Модуль восстановлен</div><h2 id="unlockTitle">Маршрут стабилен</h2><p id="unlockText">Открывается следующий сектор.</p><button class="cta" id="unlockBtn">Продолжить миссию →</button></div></div>
 </main></div><div class="toast" id="toast"></div>
 <script>
 (() => {
 'use strict';
-// CASE//ORBIT v2.2 — acceptance fix: Scanner claim symmetry prevents deterministic truth roles.
+// CASE//ORBIT v2.5 — teacher-report post-release patch. Core game systems unchanged.
 const CASES = {
   nom:{short:'И.п.',name:'Именительный',q:'кто? что?'}, gen:{short:'Р.п.',name:'Родительный',q:'кого? чего?'},
   dat:{short:'Д.п.',name:'Дательный',q:'кому? чему?'}, acc:{short:'В.п.',name:'Винительный',q:'кого? что?'},
@@ -204,6 +235,28 @@ const BANK = [
 {id:'p8',s:'О герое фильма спорили весь вечер.',w:'герое',c:'prep',d:1,why:'спорили о (ком?) герое',span:[2,7],fam:'prep-government',pd:[]}
 ];
 
+const GAME_TITLE='CASE//ORBIT — «Орбита падежей»';
+const GAME_VERSION='2.5';
+const PLAYER_SESSION_KEY='caseOrbitPlayerSession';
+const FAMILY_LABELS={
+  'syntax-subject':'И.п. / В.п.: подлежащее и объект действия',
+  'syntax-subject-object':'И.п. / В.п.: подлежащее и объект действия',
+  'nom-acc-form':'И.п. / В.п.: подлежащее и объект действия',
+  'animate-gen-acc':'Р.п. / В.п. у одушевлённых существительных',
+  'captain-gen-acc':'Р.п. / В.п. у одушевлённых существительных',
+  'station-form':'Совпадающие формы Р.п. / Д.п. / П.п.',
+  'square-form':'Совпадающие формы Р.п. / Д.п. / П.п.',
+  'third-declension-form':'Совпадающие формы существительных III склонения',
+  'verb-government':'Управление глагола',
+  'prep-government':'Управление предлога',
+  'location-prep':'В/на: место и падеж',
+  'prep-s':'Предлог «с» в разных значениях',
+  'prep-po':'Управление предлога «по»',
+  'dependent-genitive':'Зависимое существительное в Р.п.',
+  'predicate-instrumental':'Т.п. в именной части сказуемого',
+  'instrument-role':'Т.п. со значением орудия действия',
+  'adjective-government':'Управление прилагательного'
+};
 const TOTAL_TASKS=23;
 const CASE_KEYS=Object.keys(CASES);
 const $=id=>document.getElementById(id); const qsa=s=>[...document.querySelectorAll(s)];
@@ -212,6 +265,7 @@ let lastRunIds=new Set();
 let rng=()=>Math.random();
 
 const state={
+  player:{firstName:'',lastInitial:'',className:''},reportObject:null,reportText:'',
   stage:0,score:0,streak:0,maxStreak:0,energy:4,difficulty:1,phase:'awaitingInput',
   attempts:0,resolvedTasks:0,firstTryCorrect:0,eventualCorrect:0,wrongAttempts:0,completed:0,
   taskStats:{},results:[],usedThisRun:new Set(),rewards:[],moduleQuality:{},
@@ -221,6 +275,99 @@ const state={
   s3packs:[],s3i:0,s3CaseGroups:[],selectedSort:null,
   boss:[],bossi:0,bossCorrect:0,bossMistakes:0
 };
+
+function normalizePlayer(raw={}){
+  const firstName=String(raw.firstName||'').trim().replace(/\s+/g,' ');
+  const initialRaw=String(raw.lastInitial||'').trim();
+  const lastInitial=Array.from(initialRaw)[0]||'';
+  const className=String(raw.className||'').trim().replace(/\s+/g,'').toUpperCase();
+  return {firstName,lastInitial,className};
+}
+function validLetter(s){return /^\p{L}$/u.test(s)}
+function validatePlayer(raw){
+  const p=normalizePlayer(raw),errors={};
+  if(!p.firstName)errors.firstName='Укажи имя.';
+  if(!p.lastInitial)errors.lastInitial='Укажи первую букву фамилии.';else if(!validLetter(p.lastInitial))errors.lastInitial='Нужна одна буква.';
+  if(!p.className)errors.className='Укажи класс.';else if(!/^\d{1,2}[A-ZА-ЯЁ]?$/u.test(p.className))errors.className='Например: 6, 6А или 7Б.';
+  return {ok:Object.keys(errors).length===0,player:p,errors};
+}
+function playerDisplayName(player=state.player){return player.firstName+(player.lastInitial?' '+player.lastInitial.toUpperCase()+'.':'')}
+function saveSessionPlayer(player){try{sessionStorage.setItem(PLAYER_SESSION_KEY,JSON.stringify(player))}catch(e){}}
+function loadSessionPlayer(){try{const raw=JSON.parse(sessionStorage.getItem(PLAYER_SESSION_KEY)||'null');if(!raw)return null;const v=validatePlayer(raw);return v.ok?v.player:null}catch(e){return null}}
+function clearSessionPlayer(){try{sessionStorage.removeItem(PLAYER_SESSION_KEY)}catch(e){}}
+function setPlayerInputs(player){$('playerFirstName').value=player?.firstName||'';$('playerLastInitial').value=player?.lastInitial||'';$('playerClassName').value=player?.className||''}
+function clearPlayerErrors(){['FirstName','LastInitial','ClassName'].forEach(k=>{const input=$('player'+k),err=$('player'+k+'Error');input.classList.remove('invalid');err.textContent=''})}
+function showPlayerErrors(errors){
+  clearPlayerErrors();
+  const map={firstName:'FirstName',lastInitial:'LastInitial',className:'ClassName'};
+  for(const [key,msg] of Object.entries(errors)){const k=map[key],input=$('player'+k),err=$('player'+k+'Error');input.classList.add('invalid');err.textContent=msg}
+}
+function setPlayer(player,{persist=true}={}){const v=validatePlayer(player);if(!v.ok)return v;state.player=v.player;if(persist)saveSessionPlayer(state.player);setPlayerInputs(state.player);return v}
+function startFromIntro(){
+  const v=validatePlayer({firstName:$('playerFirstName').value,lastInitial:$('playerLastInitial').value,className:$('playerClassName').value});
+  if(!v.ok){showPlayerErrors(v.errors);return false}
+  clearPlayerErrors();state.player=v.player;saveSessionPlayer(state.player);start();return true;
+}
+function changePlayer(){
+  clearSessionPlayer();state.player={firstName:'',lastInitial:'',className:''};state.reportObject=null;state.reportText='';setPlayerInputs(state.player);clearPlayerErrors();$('hud').hidden=true;$('progressBar').style.width='0%';$('teacherReport').open=false;$('teacherReportBody').innerHTML='';setScreen('intro');
+}
+function reportCategory(fam){return FAMILY_LABELS[fam]||'Другие контекстные трудности'}
+function buildReportObject(){
+  const taskById=new Map(BANK.map(t=>[t.id,t]));
+  const categoryCounts=new Map();
+  state.results.filter(r=>!r.ok).forEach(r=>{const task=taskById.get(r.id);if(!task)return;const label=reportCategory(task.fam);categoryCounts.set(label,(categoryCounts.get(label)||0)+1)});
+  const errorCategories=[...categoryCounts.entries()].map(([category,count])=>({category,count})).sort((a,b)=>b.count-a.count||a.category.localeCompare(b.category,'ru'));
+  const allDifficultTasks=Object.entries(state.taskStats).map(([id,rec])=>({task:taskById.get(id),rec})).filter(x=>x.task&&x.rec.wrong>0).map(x=>({sentence:x.task.s,wrongAttempts:x.rec.wrong,category:reportCategory(x.task.fam)})).sort((a,b)=>b.wrongAttempts-a.wrongAttempts||a.sentence.localeCompare(b.sentence,'ru'));
+  const correctedTasks=Object.values(state.taskStats).filter(rec=>rec.wrong>0&&rec.resolved===true).length;
+  const difficultTasks=allDifficultTasks.slice(0,5);
+  const difficultTasksMore=Math.max(0,allDifficultTasks.length-difficultTasks.length);
+  return {
+    gameTitle:GAME_TITLE,gameVersion:GAME_VERSION,player:{...state.player},completedAt:new Date().toISOString(),score:state.score,
+    resolvedTasks:state.resolvedTasks,firstTryCorrect:state.firstTryCorrect,eventualCorrect:state.eventualCorrect,wrongAttempts:state.wrongAttempts,
+    correctedTasks,bossCorrect:state.bossCorrect,errorCategories,difficultTasks,difficultTasksMore
+  };
+}
+function localReportDate(iso){try{return new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(iso))}catch(e){return new Date(iso).toLocaleDateString('ru-RU')}}
+function errorWord(n){const n10=n%10,n100=n%100;return n10===1&&n100!==11?'ошибка':([2,3,4].includes(n10)&&![12,13,14].includes(n100)?'ошибки':'ошибок')}
+function buildReportText(report){
+  const lines=[
+    'CASE//ORBIT — Орбита падежей',
+    'Ученик: '+playerDisplayName(report.player),
+    'Класс: '+report.player.className,
+    'Дата: '+localReportDate(report.completedAt),'',
+    'Баллы: '+report.score,
+    'Выполнено: '+report.resolvedTasks,
+    'С первой попытки: '+report.firstTryCorrect+'/'+report.resolvedTasks,
+    'После исправлений решено: '+report.eventualCorrect+'/'+report.resolvedTasks,
+    'Ошибочных попыток: '+report.wrongAttempts,
+    'Заданий потребовали исправления: '+report.correctedTasks,
+    'Blackout: '+report.bossCorrect+'/4'
+  ];
+  lines.push('','Ошибки по категориям:');
+  if(report.errorCategories.length)report.errorCategories.forEach(x=>lines.push('• '+x.category+' — '+x.count));else lines.push('• Ошибок нет.');
+  lines.push('','Задания с трудностями:');
+  if(report.difficultTasks.length){report.difficultTasks.forEach(x=>lines.push('• «'+x.sentence+'» — '+x.wrongAttempts+' '+errorWord(x.wrongAttempts)));if(report.difficultTasksMore>0)lines.push('• и ещё '+report.difficultTasksMore);}else lines.push('• Ошибок нет.');
+  return lines.join('\n');
+}
+function renderTeacherReport(report){
+  const cats=report.errorCategories.length?'<ul class="report-list">'+report.errorCategories.map(x=>'<li>'+esc(x.category)+' — '+x.count+'</li>').join('')+'</ul>':'<p class="report-empty">Ошибок нет.</p>';
+  let difficult=report.difficultTasks.length?'<ul class="report-list">'+report.difficultTasks.map(x=>'<li>«'+esc(x.sentence)+'» — '+x.wrongAttempts+' '+errorWord(x.wrongAttempts)+'</li>').join('')+'</ul>':'<p class="report-empty">Ошибок нет.</p>';
+  if(report.difficultTasksMore>0)difficult+='<p class="report-empty">и ещё '+report.difficultTasksMore+'</p>';
+  $('teacherReportBody').innerHTML='<div class="report-head"><strong>'+esc(playerDisplayName(report.player))+' · '+esc(report.player.className)+'</strong><span>'+esc(GAME_TITLE)+' · '+esc(localReportDate(report.completedAt))+'</span></div>'+ 
+    '<div class="report-metrics"><div class="report-metric"><b>'+report.score+'</b><small>баллы</small></div><div class="report-metric"><b>'+report.resolvedTasks+'</b><small>выполнено</small></div><div class="report-metric"><b>'+report.firstTryCorrect+'/'+report.resolvedTasks+'</b><small>с первой попытки</small></div><div class="report-metric"><b>'+report.eventualCorrect+'/'+report.resolvedTasks+'</b><small>после исправлений решено</small></div><div class="report-metric"><b>'+report.wrongAttempts+'</b><small>ошибочных попыток</small></div><div class="report-metric"><b>'+report.correctedTasks+'</b><small>заданий потребовали исправления</small></div><div class="report-metric"><b>'+report.bossCorrect+'/4</b><small>Blackout</small></div></div>'+ 
+    '<div class="report-section"><h4>Ошибки по категориям</h4>'+cats+'</div><div class="report-section"><h4>Задания с трудностями</h4>'+difficult+'</div><div class="report-copy-row"><button class="ghost" id="copyReportBtn">Скопировать отчёт</button><span class="copy-status" id="copyStatus" aria-live="polite"></span></div>';
+  $('copyReportBtn').onclick=copyTeacherReport;
+}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';ta.style.pointerEvents='none';document.body.appendChild(ta);ta.focus();ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){ok=false}document.body.removeChild(ta);return ok;
+}
+async function copyTeacherReport(){
+  const text=state.reportText||buildReportText(state.reportObject);let ok=false;
+  try{if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function'){await navigator.clipboard.writeText(text);ok=true}}catch(e){}
+  if(!ok)ok=fallbackCopy(text);
+  $('copyStatus').textContent=ok?'Отчёт скопирован ✓':'Не удалось скопировать. Выдели отчёт вручную.';
+  return ok;
+}
 
 function seedRng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296}}
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -238,7 +385,7 @@ function updateHud(){
 function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1200)}
 function setPhase(p){state.phase=p}
 function disableButtons(container,disabled=true){if(!container)return;container.querySelectorAll('button').forEach(b=>b.disabled=disabled)}
-function taskRec(task){return state.taskStats[task.id]||(state.taskStats[task.id]={attempts:0,wrong:0,resolved:false})}
+function taskRec(task){return state.taskStats[task.id]||(state.taskStats[task.id]={attempts:0,wrong:0,resolved:false,resolvedCorrect:false})}
 function recordAttempt(task,ok,mode){
   if(state.phase!=='resolving')return false;
   const rec=taskRec(task);rec.attempts++;state.attempts++;
@@ -246,7 +393,7 @@ function recordAttempt(task,ok,mode){
   state.results.push({id:task.id,case:task.c,ok,mode,difficulty:task.d,attemptNo:rec.attempts});updateHud();return true;
 }
 function resolveTask(task,correct,mode,points){
-  const rec=taskRec(task);if(rec.resolved)return false;rec.resolved=true;state.resolvedTasks++;state.completed=state.resolvedTasks;
+  const rec=taskRec(task);if(rec.resolved)return false;rec.resolved=true;rec.resolvedCorrect=!!correct;state.resolvedTasks++;state.completed=state.resolvedTasks;
   const firstTry=correct&&rec.wrong===0;
   if(correct){state.eventualCorrect++;if(firstTry){state.firstTryCorrect++;state.streak++;state.maxStreak=Math.max(state.maxStreak,state.streak);if(state.streak>=3)state.difficulty=2}else state.streak=0;
     const retryFactor=firstTry?1:.55;const streakBonus=firstTry?Math.min(60,(state.streak-1)*10):0;state.score+=Math.round((points*retryFactor+streakBonus)*energyMultiplier());
@@ -254,7 +401,77 @@ function resolveTask(task,correct,mode,points){
   }else{state.streak=0;state.difficulty=1}
   updateHud();return true;
 }
-function feedback(el,ok,task,extra=''){el.className='feedback show '+(ok?'good':'bad');el.innerHTML=ok?'✓ Контекст считан точно. '+extra:'⚠ Сигнал искажён. '+extra+(extra?' ':'')+'Опора: <strong>'+esc(task.why)+'</strong>';const card=el.closest('.missioncard');card.classList.remove('pulse-good','shake');void card.offsetWidth;card.classList.add(ok?'pulse-good':'shake')}
+const ACTION_CUE={
+  n1:'появился',n2:'заполнила',n3:'раскачивал',n4:'лежал',n5:'освещал',n6:'укрыл',n7:'лежало',n8:'освещал',x6:'осмотрел',
+  a1:'встретил',a2:'заметили',a3:'проверил',a4:'положил',a5:'увидели',a6:'встретил',x1:'поздравили',x4:'обсуждали',x12:'вижу'
+};
+function prepBefore(task){const before=task.s.slice(0,task.span[0]).trim();const m=before.match(/([А-Яа-яЁё]+)\s*$/);return m?m[1].toLowerCase():''}
+function lowerWord(task){return String(task.w).toLowerCase()}
+function qword(task){return '«'+task.w+'»'}
+function actionCue(task){return ACTION_CUE[task.id]||''}
+function roleSubject(task,wrongCase){const a=actionCue(task);const contrast=wrongCase==='acc'?'Форма может совпадать с В.п., но здесь слово не является объектом действия. ':'';const stateVerb=['n1','n4','n7'].includes(task.id);const role=a?(stateVerb?'именно '+lowerWord(task)+' является носителем состояния «'+a+'»':'именно '+lowerWord(task)+' выполняет действие «'+a+'»'):'оно выполняет действие или является носителем состояния';return contrast+qword(task)+' — подлежащее: '+role+'. Подлежащее стоит в И.п.'}
+function roleAccusative(task,wrongCase){const a=actionCue(task);const contrast=wrongCase==='nom'?'Форма совпадает с И.п., поэтому окончание здесь не помогает. ':'';return contrast+qword(task)+' — объект действия'+(a?' «'+a+'»':' глагола')+', то есть прямое дополнение → В.п.'}
+function animateAcc(task,wrongCase){const a=actionCue(task);const contrast=wrongCase==='gen'?'Вопрос «кого?» встречается и в Р.п., и в В.п. ':'';return contrast+qword(task)+(task.id==='a6'?' — те, на кого':' — тот, на кого')+' направлено действие'+(a?' «'+a+'»':'')+': это прямое дополнение → В.п.'}
+function prepCaseReason(task){
+  const p=prepBefore(task),w=lowerWord(task);
+  if(p==='с'&&task.c==='gen')return qword(task)+' в сочетании «с '+w+'» обозначает исходную точку — откуда? Предлог «с» в этом значении требует Р.п.';
+  if(p==='с'&&task.c==='ins')return qword(task)+' в сочетании «с '+w+'» означает совместность — вместе с кем? В этом значении предлог «с» требует Т.п.';
+  if((p==='в'||p==='на')&&task.c==='prep')return 'Сочетание «'+p+' '+w+'» обозначает место: где? '+p+' '+w+', а не направление «куда?». Поэтому это П.п.';
+  if(p==='о'&&task.c==='prep')return 'Предлог «о» требует П.п.: о ком? о чём? — '+w+'.';
+  if(p==='к'&&task.c==='dat')return 'Предлог «к» требует Д.п.: к кому? к чему? — '+w+'.';
+  if(p==='по'&&task.c==='dat')return 'Предлог «по» в этой конструкции требует Д.п.: по кому? по чему? — '+w+'.';
+  const req={
+    gen:{'из':'Р.п.','у':'Р.п.','для':'Р.п.','до':'Р.п.','возле':'Р.п.','около':'Р.п.'},
+    ins:{'перед':'Т.п.'}
+  };
+  if(req[task.c]&&req[task.c][p])return 'Предлог «'+p+'» требует '+req[task.c][p]+': '+p+' '+w+'.';
+  return task.why+' → '+CASES[task.c].short;
+}
+function formFamilyReason(task,wrongCase){
+  const base=prepCaseReason(task);const multi=['gen','dat','prep'].includes(task.c)&&['gen','dat','prep'].includes(wrongCase);
+  return (multi?'Форма '+qword(task)+' совпадает в нескольких падежах; решает предлог и значение конструкции. ':'')+base;
+}
+function verbGovernmentReason(task){const cue=(task.why.match(/^([^()]+?)\s*\(/)||[])[1]?.trim()||'';const w=lowerWord(task);
+  if(task.c==='dat')return qword(task)+(cue? ' зависит от глагола «'+cue+'»':' зависит от глагола')+': кому? чему? — '+w+' → Д.п.';
+  if(task.c==='ins')return 'Глагол '+(cue?'«'+cue+'» ':'')+'требует Т.п.: кем? чем? — '+w+'.';
+  return task.why+' → '+CASES[task.c].short;
+}
+function pedagogicalWhy(task,wrongCase=null){
+  switch(task.fam){
+    case 'syntax-subject':
+    case 'syntax-subject-object': return roleSubject(task,wrongCase);
+    case 'nom-acc-form': return task.c==='nom'?roleSubject(task,wrongCase):roleAccusative(task,wrongCase);
+    case 'animate-gen-acc': return animateAcc(task,wrongCase);
+    case 'captain-gen-acc':
+      if(task.c==='acc')return (wrongCase==='gen'?'Вопрос «кого?» встречается и в Р.п., и в В.п. ':'')+qword(task)+' — тот, на кого направлено действие «поздравили»: это прямое дополнение → В.п.';
+      return (wrongCase==='acc'?'Вопрос «кого?» встречается и в Р.п., и в В.п. ':'')+'Слово '+qword(task)+' зависит от предлога «около». Предлог «около» требует Р.п.: около кого? капитана.';
+    case 'station-form':
+    case 'square-form':
+    case 'third-declension-form': return formFamilyReason(task,wrongCase);
+    case 'location-prep': return prepCaseReason(task);
+    case 'prep-s': return (wrongCase==='gen'?'Предлог «с» может употребляться и с Р.п., и с Т.п.; здесь решает значение. ':'')+qword(task)+' в сочетании «с '+lowerWord(task)+'» означает совместность — вместе с кем? В этом значении предлог «с» требует Т.п.';
+    case 'prep-po': return 'Предлог «по» в этой конструкции требует Д.п.: по чему? '+lowerWord(task)+'.';
+    case 'dependent-genitive': return qword(task)+' зависит от слова «кабинет»: кабинет (кого?) учителя → Р.п. Предлог «в» относится к слову «кабинете», а не к слову «учителя».';
+    case 'verb-government': return verbGovernmentReason(task);
+    case 'predicate-instrumental': return 'После связки «стала» слово '+qword(task)+' называет, кем стала сестра → Т.п.';
+    case 'instrument-role': return qword(task)+' обозначает орудие действия: работал чем? кистью → Т.п.';
+    case 'adjective-government': return 'Слово «довольна» требует Т.п.: довольна чем? результатом.';
+    case 'prep-government': return prepCaseReason(task);
+    default: return task.why+' → '+CASES[task.c].short;
+  }
+}
+function feedbackQACheck(task){
+  const r=pedagogicalWhy(task,null);if(!r||!r.includes(CASES[task.c].short))return false;
+  if(task.c==='nom'&&!/подлежащее/i.test(r))return false;
+  if(task.c==='acc'&&!/(объект действия|прямое дополнение)/i.test(r))return false;
+  if(['station-form','square-form','third-declension-form'].includes(task.fam)&&!/(предлог|П\.п\.|Д\.п\.|Р\.п\.)/i.test(r))return false;
+  if(task.fam==='location-prep'&&!/(место|где\?)/i.test(r))return false;
+  if(task.fam==='prep-s'&&!/(совместность|вместе с кем)/i.test(r))return false;
+  if(task.id==='g4'&&!/(исходную точку|откуда)/i.test(r))return false;
+  if(task.fam==='dependent-genitive'&&!/кабинет/i.test(r))return false;
+  return true;
+}
+function feedback(el,ok,task,extra='',wrongCase=null){el.className='feedback show '+(ok?'good':'bad');el.innerHTML=ok?'✓ Контекст считан точно. '+extra:'⚠ Сигнал искажён. '+extra+(extra?' ':'')+'<strong>'+esc(pedagogicalWhy(task,wrongCase))+'</strong>';const card=el.closest('.missioncard');card.classList.remove('pulse-good','shake');void card.offsetWidth;card.classList.add(ok?'pulse-good':'shake')}
 function caseButtons(container,handler,{questions=true}={}){container.innerHTML='';Object.entries(CASES).forEach(([k,v])=>{const b=document.createElement('button');b.className='casebtn';b.dataset.case=k;b.innerHTML='<b>'+v.short+' · '+v.name+'</b>'+(questions?'<small>'+v.q+'</small>':'');b.addEventListener('click',()=>handler(k,b));container.appendChild(b)})}
 function bossButtons(container,handler){container.innerHTML='';Object.entries(CASES).forEach(([k,v])=>{const b=document.createElement('button');b.className='bosscase';b.dataset.case=k;b.innerHTML='<b>'+v.short+'</b><small>'+v.name+'</small>';b.addEventListener('click',()=>handler(k,b));container.appendChild(b)})}
 function showUnlock(icon,title,text,next){$('unlockIcon').textContent=icon;$('unlockTitle').textContent=title;$('unlockText').textContent=text;$('overlay').classList.add('show');$('unlockBtn').onclick=()=>{$('overlay').classList.remove('show');next()}}
@@ -298,9 +515,9 @@ function tierText(t){return t===3?'усилен':t===2?'стабилен':'во�
 function paintModuleShards(screenId){const tiers=[state.moduleQuality.route,state.moduleQuality.scanner,state.moduleQuality.sort];qsa(`#${screenId} .rewards .shard`).forEach((el,i)=>{el.classList.remove('on','q1','q2','q3');const tier=tiers[i];if(tier)el.classList.add('on','q'+tier)})}
 
 function resetState(seed){
-  const explicit=Number.isInteger(seed);const nextSeed=explicit?seed>>>0:(Date.now()>>>0);rng=seedRng(nextSeed);
-  Object.assign(state,{stage:0,score:0,streak:0,maxStreak:0,energy:4,difficulty:1,phase:'awaitingInput',attempts:0,resolvedTasks:0,firstTryCorrect:0,eventualCorrect:0,wrongAttempts:0,completed:0,taskStats:{},results:[],usedThisRun:new Set(),rewards:[],moduleQuality:{},runSeed:nextSeed,explicitSeed:explicit,reservedBoss:{hard:[],support:[]},s1:[],s1i:0,s1CasePlan:[],currentS1:null,s2:[],s2i:0,s2CasePlan:[],s2TruthPattern:[],currentS2:null,s2AwaitingCorrection:false,s3packs:[],s3i:0,s3CaseGroups:[],selectedSort:null,boss:[],bossi:0,bossCorrect:0,bossMistakes:0});
-  qsa('.shard').forEach(x=>{x.classList.remove('on','q1','q2','q3')});qsa('.bossnode').forEach(x=>x.classList.remove('done','exact','damaged'));reserveBoss();updateHud();
+  const explicit=Number.isInteger(seed);const nextSeed=explicit?seed>>>0:(Date.now()>>>0);rng=seedRng(nextSeed);const currentPlayer={...state.player};
+  Object.assign(state,{player:currentPlayer,reportObject:null,reportText:'',stage:0,score:0,streak:0,maxStreak:0,energy:4,difficulty:1,phase:'awaitingInput',attempts:0,resolvedTasks:0,firstTryCorrect:0,eventualCorrect:0,wrongAttempts:0,completed:0,taskStats:{},results:[],usedThisRun:new Set(),rewards:[],moduleQuality:{},runSeed:nextSeed,explicitSeed:explicit,reservedBoss:{hard:[],support:[]},s1:[],s1i:0,s1CasePlan:[],currentS1:null,s2:[],s2i:0,s2CasePlan:[],s2TruthPattern:[],currentS2:null,s2AwaitingCorrection:false,s3packs:[],s3i:0,s3CaseGroups:[],selectedSort:null,boss:[],bossi:0,bossCorrect:0,bossMistakes:0});
+  $('teacherReport').open=false;$('teacherReportBody').innerHTML='';qsa('.shard').forEach(x=>{x.classList.remove('on','q1','q2','q3')});qsa('.bossnode').forEach(x=>x.classList.remove('done','exact','damaged'));reserveBoss();updateHud();
 }
 function start(seed){resetState(seed);$('hud').hidden=false;state.stage=1;state.s1CasePlan=shuffle(CASE_KEYS);state.s1i=0;renderS1();setScreen('stage1');updateHud()}
 
@@ -308,7 +525,7 @@ function renderS1(){
   setPhase('awaitingInput');if(!state.currentS1){state.currentS1=chooseOne({caseKey:state.s1CasePlan[state.s1i],difficulty:state.difficulty});state.s1.push(state.currentS1)}const t=state.currentS1;
   $('s1Count').textContent=`Сигнал ${state.s1i+1}/6`;$('s1Sentence').innerHTML=mark(t);$('s1Feedback').className='feedback';$('s1Feedback').innerHTML='';$('s1Next').classList.remove('show');
   $('s1Intel').innerHTML=state.difficulty===2?'Следующий сигнал выбран из <strong>контекстных ловушек</strong>: ориентируйся на связь слов, а не на форму.':'Смотри не только на окончание. Найди слово, от которого зависит существительное, и задай вопрос.';
-  caseButtons($('s1Cases'),(c,b)=>{if(state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('s1Cases'),true);const ok=c===t.c;recordAttempt(t,ok,'route');resolveTask(t,ok,'route',100);b.classList.add(ok?'good':'bad');if(!ok)$('s1Cases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('s1Feedback'),ok,t,ok?`Верно: ${CASES[t.c].short}`:'');$('s1Next').classList.add('show');setPhase('feedback')})
+  caseButtons($('s1Cases'),(c,b)=>{if(state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('s1Cases'),true);const ok=c===t.c;recordAttempt(t,ok,'route');resolveTask(t,ok,'route',100);b.classList.add(ok?'good':'bad');if(!ok)$('s1Cases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('s1Feedback'),ok,t,ok?`Верно: ${CASES[t.c].short}`:'',ok?null:c);$('s1Next').classList.add('show');setPhase('feedback')})
 }
 $('s1Next').onclick=()=>{state.s1i++;state.currentS1=null;if(state.s1i<6)renderS1();else{const tier=moduleTier(['route']);state.moduleQuality.route=tier;applyShardQuality(['r1'],tier);showUnlock('◈','Маршрут '+tierText(tier),'Первый контур пройден. Качество модуля зависит от точности и сохранённого сигнала.',()=>{state.stage=2;paintModuleShards('stage2');prepareS2();setScreen('stage2');updateHud()})}};
 
@@ -331,11 +548,11 @@ function renderS2(){
   qsa('#binaryRow .binary').forEach(b=>{b.disabled=false;b.classList.remove('good','bad')});caseButtons($('s2Cases'),(c,b)=>resolveS2Correction(c,b));
   $('s2Intel').innerHTML=state.difficulty===2?'Сканер использует более коварные совпадения форм. Проверяй управление и роль слова в предложении.':'Проверяй связь слов. Ошибочные метки строятся только из правдоподобных смешений, а не случайных падежей.';
 }
-function resolveS2Correction(c,b){const t=state.currentS2;if(!state.s2AwaitingCorrection||state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('s2Cases'),true);const ok=c===t.c;recordAttempt(t,ok,'scanner-correct');resolveTask(t,ok,'scanner-correct',110);b.classList.add(ok?'good':'bad');if(!ok)$('s2Cases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('s2Feedback'),ok,t,ok?'Исправление принято.':'');$('s2Next').classList.add('show');setPhase('feedback')}
+function resolveS2Correction(c,b){const t=state.currentS2;if(!state.s2AwaitingCorrection||state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('s2Cases'),true);const ok=c===t.c;recordAttempt(t,ok,'scanner-correct');resolveTask(t,ok,'scanner-correct',110);b.classList.add(ok?'good':'bad');if(!ok)$('s2Cases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('s2Feedback'),ok,t,ok?'Исправление принято.':'',ok?null:c);$('s2Next').classList.add('show');setPhase('feedback')}
 qsa('#binaryRow .binary').forEach(btn=>btn.addEventListener('click',()=>{
   if(state.phase!=='awaitingInput')return;const t=state.currentS2;setPhase('resolving');disableButtons($('binaryRow'),true);const saysCorrect=t.claimCase===t.c;const verdict=btn.dataset.verdict==='true';const ok=verdict===saysCorrect;recordAttempt(t,ok,'scanner-verdict');
   if(ok&&!verdict){btn.classList.add('good');state.s2AwaitingCorrection=true;$('correction').classList.add('show');$('s2Feedback').className='feedback show good';$('s2Feedback').innerHTML='✓ Сбой найден. Теперь восстанови правильный падеж.';setTimeout(()=>{setPhase('awaitingInput');disableButtons($('s2Cases'),false)},220)}
-  else{resolveTask(t,ok,'scanner-verdict',110);btn.classList.add(ok?'good':'bad');if(!ok){const right=qsa('#binaryRow .binary').find(b=>(b.dataset.verdict==='true')===saysCorrect);if(right)right.classList.add('good')}feedback($('s2Feedback'),ok,t,ok?'Разметка действительно верна.':'');$('s2Next').classList.add('show');setPhase('feedback')}
+  else{resolveTask(t,ok,'scanner-verdict',110);btn.classList.add(ok?'good':'bad');if(!ok){const right=qsa('#binaryRow .binary').find(b=>(b.dataset.verdict==='true')===saysCorrect);if(right)right.classList.add('good')}feedback($('s2Feedback'),ok,t,ok?'Разметка действительно верна.':'',(!ok&&!saysCorrect)?t.claimCase:null);$('s2Next').classList.add('show');setPhase('feedback')}
 }));
 $('s2Next').onclick=()=>{state.s2i++;state.currentS2=null;if(state.s2i<5)renderS2();else{const tier=moduleTier(['scanner-verdict','scanner-correct']);state.moduleQuality.scanner=tier;applyShardQuality(['r2b'],tier);showUnlock('⌬','Сканер '+tierText(tier),'Модуль пройден. Его состояние отражает качество проверки, а не просто факт прохождения.',()=>{state.stage=3;paintModuleShards('stage3');prepareS3();setScreen('stage3');updateHud()})}};
 
@@ -352,7 +569,7 @@ function sortTo(c,dock){
   if(state.phase!=='awaitingInput')return;if(!state.selectedSort){toast('Сначала выбери карточку');return}const pack=state.s3packs[state.s3i],t=pack.tasks.find(x=>x.id===state.selectedSort),card=$('sortCards').querySelector(`[data-id="${t.id}"]`);if(!card||card.classList.contains('done'))return;
   setPhase('resolving');disableButtons($('sortDocks'),true);const ok=c===t.c;recordAttempt(t,ok,'sort');dock.classList.remove('good','bad','flash');void dock.offsetWidth;dock.classList.add(ok?'good':'bad','flash');
   if(ok){resolveTask(t,true,'sort',120);card.classList.add('done');card.classList.remove('selected');state.selectedSort=null;$('s3Feedback').className='feedback show good';$('s3Feedback').innerHTML='✓ Карточка распределена верно.'}
-  else{$('s3Feedback').className='feedback show bad';$('s3Feedback').innerHTML='⚠ Не этот сектор. Опора: <strong>'+esc(t.why)+'</strong>. Попробуй ещё раз.';card.classList.add('selected')}
+  else{$('s3Feedback').className='feedback show bad';$('s3Feedback').innerHTML='⚠ Не этот сектор. <strong>'+esc(pedagogicalWhy(t,c))+'</strong> Попробуй ещё раз.';card.classList.add('selected')}
   const done=pack.tasks.every(x=>taskRec(x).resolved);if(done)$('s3Next').classList.add('show');
   setTimeout(()=>{if(!ok){setPhase('awaitingInput');disableButtons($('sortDocks'),false)}else if(done){setPhase('feedback')}else{setPhase('awaitingInput');disableButtons($('sortDocks'),false);$('sortCards').closest('.sortzone').classList.remove('has-selection')}},280);
 }
@@ -366,7 +583,7 @@ function prepareBoss(){
 }
 function renderBoss(){
   setPhase('awaitingInput');const t=state.boss[state.bossi];$('bossCount').textContent=`Сигнал ${state.bossi+1}/4`;$('bossSentence').innerHTML=mark(t);$('bossFeedback').className='feedback';$('bossFeedback').innerHTML='';$('bossNext').classList.remove('show');
-  bossButtons($('bossCases'),(c,b)=>{if(state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('bossCases'),true);const ok=c===t.c;recordAttempt(t,ok,'boss');resolveTask(t,ok,'boss',190);if(ok)state.bossCorrect++;else state.bossMistakes++;b.classList.add(ok?'good':'bad');if(!ok)$('bossCases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('bossFeedback'),ok,t,ok?'Финальный сигнал принят.':'');const node=qsa('.bossnode')[state.bossi];node.classList.add('done',ok?'exact':'damaged');if(!ok){const card=$('missionBoss');card.classList.remove('boss-hit');void card.offsetWidth;card.classList.add('boss-hit')}$('bossNext').classList.add('show');setPhase('feedback')})
+  bossButtons($('bossCases'),(c,b)=>{if(state.phase!=='awaitingInput')return;setPhase('resolving');disableButtons($('bossCases'),true);const ok=c===t.c;recordAttempt(t,ok,'boss');resolveTask(t,ok,'boss',190);if(ok)state.bossCorrect++;else state.bossMistakes++;b.classList.add(ok?'good':'bad');if(!ok)$('bossCases').querySelector(`[data-case="${t.c}"]`).classList.add('good');feedback($('bossFeedback'),ok,t,ok?'Финальный сигнал принят.':'',ok?null:c);const node=qsa('.bossnode')[state.bossi];node.classList.add('done',ok?'exact':'damaged');if(!ok){const card=$('missionBoss');card.classList.remove('boss-hit');void card.offsetWidth;card.classList.add('boss-hit')}$('bossNext').classList.add('show');setPhase('feedback')})
 }
 $('bossNext').onclick=()=>{state.bossi++;if(state.bossi<4)renderBoss();else finish()};
 function finish(){
@@ -377,10 +594,13 @@ function finish(){
   else{title='Связь восстановлена';sub='Миссия завершена, но Blackout оставил повреждённые узлы.';note='Повтори маршрут: в следующем запуске порядок и набор максимально изменятся, а система снова начнёт с базового уровня.'}
   if(state.energy===0)sub+=' Нулевой сигнал снизил итоговый множитель и качество восстановления.';
   if(moduleSum<=4)note+=' Часть модулей восстановлена с помехами — их качество зависело от хода игры.';
-  $('finalTitle').textContent=title;$('finalSub').textContent=sub;$('skillNote').textContent=note+` Попыток: ${state.attempts}. Seed: ${state.runSeed}.`;setScreen('final');$('progressBar').style.width='100%';
+  $('finalTitle').textContent=title;$('finalSub').textContent=sub;$('skillNote').textContent=note;
+  state.reportObject=buildReportObject();state.reportText=buildReportText(state.reportObject);renderTeacherReport(state.reportObject);
+  setScreen('final');$('progressBar').style.width='100%';
 }
 
-$('startBtn').onclick=()=>start();$('restartBtn').onclick=()=>start();
+$('startBtn').onclick=startFromIntro;$('restartBtn').onclick=()=>start();$('changePlayerBtn').onclick=changePlayer;
+['playerFirstName','playerLastInitial','playerClassName'].forEach(id=>$(id).addEventListener('input',()=>{const key=id.replace('player','');$(id).classList.remove('invalid');$('player'+key+'Error').textContent=''}));
 function validate(){
   const errors=[];const ids=new Set();const counts=Object.fromEntries(CASE_KEYS.map(c=>[c,0]));let hard=0;
   for(const t of BANK){
@@ -389,6 +609,7 @@ function validate(){
     if(![1,2].includes(t.d))errors.push('difficulty:'+t.id);if(t.d===2)hard++;
     if(!Array.isArray(t.span)||t.span.length!==2||t.s.slice(t.span[0],t.span[1])!==t.w)errors.push('target-range:'+t.id);
     if(!Array.isArray(t.pd)||t.pd.some(c=>!CASES[c]||c===t.c)||new Set(t.pd).size!==t.pd.length)errors.push('plausible-distractors:'+t.id);
+    if(!feedbackQACheck(t))errors.push('feedback-qa:'+t.id);
     counts[t.c]=(counts[t.c]||0)+1;
   }
   for(const c of CASE_KEYS)if(counts[c]<8)errors.push('case-min:'+c+':'+counts[c]);
@@ -401,9 +622,11 @@ function validate(){
   const trueClaimCaseSet=new Set(scannerTrueClaimCases());
   for(const c of trueClaimCaseSet)if(!falseClaimCases.has(c))errors.push('scanner-claim-bias:'+c);
   if(!trueClaimCaseSet.size)errors.push('scanner-true-claim-capacity:0');
+  for(const fam of new Set(BANK.map(t=>t.fam)))if(!FAMILY_LABELS[fam])errors.push('report-category:'+fam);
   return {ok:errors.length===0,errors,count:BANK.length,hard,cases:counts,scannerEligible:scanner.length,scannerCases:[...scannerCases],scannerFalseClaimCases:[...falseClaimCases],scannerTrueClaimCases:[...trueClaimCaseSet],totalTasks:TOTAL_TASKS};
 }
-window.__GAME__={BANK,CASES,state,start,finish,resetState,validate,setSeed:(seed)=>start(seed),getLastRunIds:()=>[...lastRunIds],getRunIds:()=>[...state.usedThisRun],hasPlausibleDistractor,controlledTruthPattern,scannerFalseClaimCases:()=>[...scannerFalseClaimCases()],scannerTrueClaimCases};
+window.__GAME__={BANK,CASES,state,start,finish,resetState,validate,setSeed:(seed)=>start(seed),setPlayer,getPlayer:()=>({...state.player}),getReport:()=>state.reportObject?JSON.parse(JSON.stringify(state.reportObject)):null,getReportText:()=>state.reportText,getLastRunIds:()=>[...lastRunIds],getRunIds:()=>[...state.usedThisRun],hasPlausibleDistractor,controlledTruthPattern,scannerFalseClaimCases:()=>[...scannerFalseClaimCases()],scannerTrueClaimCases,pedagogicalWhy,feedbackQACheck,buildReportObject,buildReportText,copyTeacherReport,changePlayer};
+const restoredPlayer=loadSessionPlayer();if(restoredPlayer){state.player=restoredPlayer;setPlayerInputs(restoredPlayer)}else setPlayerInputs(state.player);
 $('hud').hidden=true;updateHud();
 })();
 </script>
