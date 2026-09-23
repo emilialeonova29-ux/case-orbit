@@ -447,7 +447,43 @@ const BANK = [
 
 const GAME_TITLE='CASE//ORBIT — «Орбита падежей»';
 const GAME_ID='G-001';
-const GAME_VERSION='2.6.1-preMVP-student';
+const GAME_VERSION='2.6.1';
+const MODE='standard';
+const BANK_ID='BANK-01';
+const BANK_VERSION='v1';
+
+const GAME_RESULT_SYNC={
+  endpoint:'https://acfuzhmqjdaypnhfabec.supabase.co/functions/v1/game-result',
+  publishableKey:'sb_publishable_RXV49_9pWkIABvqqTEU11g_KzjQPmSC',
+  outboxKey:'rusgame.gameResultOutbox.v1'
+};
+function cloudSafeResult(result){
+  const clone=JSON.parse(JSON.stringify(result||{}));
+  delete clone.student;delete clone.player;
+  return clone;
+}
+function loadGameResultOutbox(){try{const x=JSON.parse(localStorage.getItem(GAME_RESULT_SYNC.outboxKey)||'{}');return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}catch{return {}}}
+function saveGameResultOutbox(outbox){try{localStorage.setItem(GAME_RESULT_SYNC.outboxKey,JSON.stringify(outbox));return true}catch{return false}}
+function gameResultSyncKey(result){return `${result?.gameId||'GAME'}:${result?.sessionId||result?.roundId||'SESSION'}`}
+function queueGameResultSync(result){
+  if(!result?.completed||!result?.studentCode||!result?.sessionId||!result?.resultStats)return false;
+  const payload={result:cloudSafeResult(result),sourcePath:location.pathname};
+  const outbox=loadGameResultOutbox();outbox[gameResultSyncKey(result)]=payload;saveGameResultOutbox(outbox);
+  void flushGameResultOutbox();return true;
+}
+async function flushGameResultOutbox(){
+  const snapshot=loadGameResultOutbox();
+  for(const [key,payload] of Object.entries(snapshot)){
+    try{
+      const response=await fetch(GAME_RESULT_SYNC.endpoint,{method:'POST',headers:{apikey:GAME_RESULT_SYNC.publishableKey,'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true});
+      if(!response.ok)continue;
+      const current=loadGameResultOutbox();if(current[key]){delete current[key];saveGameResultOutbox(current)}
+    }catch{}
+  }
+}
+window.addEventListener('online',()=>{void flushGameResultOutbox()});
+setTimeout(()=>{void flushGameResultOutbox()},0);
+
 const CASE_RESULT_HISTORY_BASE='caseOrbit:normalizedResultHistory:G-001:v1';
 function caseResultHistoryKey(studentCode){return `${CASE_RESULT_HISTORY_BASE}:${normalizeStudentIdentity({studentCode}).studentCode}`}
 const FAMILY_LABELS={
@@ -511,13 +547,14 @@ function buildReportObject(){
   const difficultTasks=allDifficultTasks.slice(0,5);
   const difficultTasksMore=Math.max(0,allDifficultTasks.length-difficultTasks.length);
   return {
-    gameId:GAME_ID,gameTitle:GAME_TITLE,gameVersion:GAME_VERSION,studentCode:state.player.studentCode,sessionId:state.sessionId,runSeed:state.runSeed,player:{...state.player},completed:true,completedAt:new Date().toISOString(),score:state.score,
+    gameId:GAME_ID,gameTitle:GAME_TITLE,gameVersion:GAME_VERSION,mode:MODE,bankId:BANK_ID,bankVersion:BANK_VERSION,studentCode:state.player.studentCode,sessionId:state.sessionId,runSeed:state.runSeed,player:{...state.player},completed:true,completedAt:new Date().toISOString(),score:state.score,
     resolvedTasks:state.resolvedTasks,firstTryCorrect:state.firstTryCorrect,eventualCorrect:state.eventualCorrect,wrongAttempts:state.wrongAttempts,
-    correctedTasks,bossCorrect:state.bossCorrect,errorCategories,difficultTasks,difficultTasksMore
+    correctedTasks,bossCorrect:state.bossCorrect,errorCategories,difficultTasks,difficultTasksMore,
+    resultStats:{attempts:state.attempts,resolvedTasks:state.resolvedTasks,firstTryCorrect:state.firstTryCorrect,eventualCorrect:state.eventualCorrect,wrongAttempts:state.wrongAttempts,correctedTasks,bossCorrect:state.bossCorrect,score:state.score}
   };
 }
 function loadCaseResultHistory(studentCode=state.player?.studentCode||loadActiveStudent()?.studentCode){const code=normalizeStudentIdentity({studentCode}).studentCode;const empty={schemaVersion:'case-result-history-v1',gameId:GAME_ID,studentCode:code||null,results:{}};if(!code)return empty;try{const parsed=JSON.parse(localStorage.getItem(caseResultHistoryKey(code))||'null');return {...empty,results:parsed?.results&&typeof parsed.results==='object'?parsed.results:{}}}catch{return empty}}
-function persistCaseResult(report){if(!report?.studentCode||!report?.sessionId)return false;const h=loadCaseResultHistory(report.studentCode);h.results[report.sessionId]=JSON.parse(JSON.stringify(report));try{localStorage.setItem(caseResultHistoryKey(report.studentCode),JSON.stringify(h))}catch{}persistSharedGameResult(GAME_ID,report.sessionId,{gameId:GAME_ID,gameVersion:GAME_VERSION,studentCode:report.studentCode,sessionId:report.sessionId,completed:true,firstTryCorrect:report.firstTryCorrect,eventualCorrect:report.eventualCorrect,wrongAttempts:report.wrongAttempts,bossCorrect:report.bossCorrect,completedAt:report.completedAt},report.studentCode);return true}
+function persistCaseResult(report){if(!report?.studentCode||!report?.sessionId)return false;const h=loadCaseResultHistory(report.studentCode);h.results[report.sessionId]=JSON.parse(JSON.stringify(report));try{localStorage.setItem(caseResultHistoryKey(report.studentCode),JSON.stringify(h))}catch{}persistSharedGameResult(GAME_ID,report.sessionId,{gameId:GAME_ID,gameVersion:GAME_VERSION,mode:report.mode,bankId:report.bankId,bankVersion:report.bankVersion,studentCode:report.studentCode,sessionId:report.sessionId,completed:true,firstTryCorrect:report.firstTryCorrect,eventualCorrect:report.eventualCorrect,wrongAttempts:report.wrongAttempts,bossCorrect:report.bossCorrect,completedAt:report.completedAt},report.studentCode);queueGameResultSync(report);return true}
 function makeSessionId(){try{if(globalThis.crypto?.randomUUID)return 'S-'+crypto.randomUUID().replace(/-/g,'').slice(0,12).toUpperCase()}catch{}return 'S-'+Math.random().toString(36).slice(2,14).toUpperCase()}
 function localReportDate(iso){try{return new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(iso))}catch(e){return new Date(iso).toLocaleDateString('ru-RU')}}
 function errorWord(n){const n10=n%10,n100=n%100;return n10===1&&n100!==11?'ошибка':([2,3,4].includes(n10)&&![12,13,14].includes(n100)?'ошибки':'ошибок')}
@@ -942,7 +979,7 @@ function validate(){
   for(const fam of new Set(BANK.map(t=>t.fam)))if(!FAMILY_LABELS[fam])errors.push('report-category:'+fam);
   return {ok:errors.length===0,errors,count:BANK.length,hard,cases:counts,scannerEligible:scanner.length,scannerCases:[...scannerCases],scannerFalseClaimCases:[...falseClaimCases],scannerTrueClaimCases:[...trueClaimCaseSet],totalTasks:TOTAL_TASKS};
 }
-window.__GAME__={GAME_ID,BANK,CASES,state,start,finish,resetState,validate,setSeed:(seed)=>start(seed),setPlayer,getPlayer:()=>({...state.player}),getReport:()=>state.reportObject?JSON.parse(JSON.stringify(state.reportObject)):null,getReportText:()=>state.reportText,getLastRunIds:()=>[...lastRunIds],getRunIds:()=>[...state.usedThisRun],hasPlausibleDistractor,controlledTruthPattern,scannerFalseClaimCases:()=>[...scannerFalseClaimCases()],scannerTrueClaimCases,pedagogicalWhy,feedbackQACheck,buildReportObject,buildReportText,copyTeacherReport,changePlayer,ensureAnswerZoneVisible,qaAssertCorrectOption,qaAssertStage3Pack,captureCurrentAnswerDebug,getQALog:()=>state.qaLog.map(x=>JSON.parse(JSON.stringify(x))),getQAContext:()=>JSON.parse(JSON.stringify(state.qaContext)),getActiveStudent:()=>loadActiveStudent(),activateStudent,getSharedRoot:()=>JSON.parse(JSON.stringify(loadSharedRoot())),getSharedProgress:(code)=>JSON.parse(JSON.stringify(loadSharedProgress(code))),getSharedProgressSummary:(code)=>sharedProgressSummary(loadSharedProgress(code)),getResultHistory:()=>JSON.parse(JSON.stringify(loadCaseResultHistory())),awardSharedFragment};
+window.__GAME__={GAME_ID,GAME_VERSION,MODE,BANK_ID,BANK_VERSION,BANK,CASES,state,start,finish,resetState,validate,setSeed:(seed)=>start(seed),setPlayer,getPlayer:()=>({...state.player}),getReport:()=>state.reportObject?JSON.parse(JSON.stringify(state.reportObject)):null,getReportText:()=>state.reportText,getLastRunIds:()=>[...lastRunIds],getRunIds:()=>[...state.usedThisRun],hasPlausibleDistractor,controlledTruthPattern,scannerFalseClaimCases:()=>[...scannerFalseClaimCases()],scannerTrueClaimCases,pedagogicalWhy,feedbackQACheck,buildReportObject,buildReportText,copyTeacherReport,changePlayer,ensureAnswerZoneVisible,qaAssertCorrectOption,qaAssertStage3Pack,captureCurrentAnswerDebug,getQALog:()=>state.qaLog.map(x=>JSON.parse(JSON.stringify(x))),getQAContext:()=>JSON.parse(JSON.stringify(state.qaContext)),getActiveStudent:()=>loadActiveStudent(),activateStudent,getSharedRoot:()=>JSON.parse(JSON.stringify(loadSharedRoot())),getSharedProgress:(code)=>JSON.parse(JSON.stringify(loadSharedProgress(code))),getSharedProgressSummary:(code)=>sharedProgressSummary(loadSharedProgress(code)),getResultHistory:()=>JSON.parse(JSON.stringify(loadCaseResultHistory())),getGameResultOutbox:()=>JSON.parse(JSON.stringify(loadGameResultOutbox())),queueGameResultSync,flushGameResultOutbox,awardSharedFragment};
 setupSharedCollectionUI();
 const restoredPlayer=loadSessionPlayer();if(restoredPlayer){state.player=restoredPlayer;setPlayerInputs(restoredPlayer);renderActiveStudentUI(restoredPlayer)}else setPlayerInputs(state.player);
 $('hud').hidden=true;updateHud();
